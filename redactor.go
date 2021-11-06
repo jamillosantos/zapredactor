@@ -13,10 +13,16 @@ const (
 	nilString      = "[NIL]"
 )
 
+// TagRedactor uses the tags from the given struct to check what are the structs that need to be redacted.
+// By default, this struct redacts all fields, unless they are explicitly using a tag `redact:"allow"`.
+// `nil` pointers will be logged as `[NI]`.
+// Fields with `redact:"-"` will be ignored and won't make to the logs.
+// Nested structs will be visited field by fields.
 type TagRedactor struct {
 	val interface{}
 }
 
+// Redact implements what is described on the TagRedactor.
 func (r TagRedactor) Redact(encoder zapcore.ObjectEncoder) error {
 	val := reflect.ValueOf(r.val)
 	t := reflect.TypeOf(r.val)
@@ -55,20 +61,38 @@ func logObject(vt reflect.Value, t reflect.Type, prefix string, encoder zapcore.
 	fieldsNum := vt.NumField()
 	for i := 0; i < fieldsNum; i++ {
 		field := vt.Field(i)
-		fieldType := t.Field(i)
+		fieldStructType := t.Field(i)
+		fieldType := fieldStructType.Type
+		if field.Kind() == reflect.Ptr {
+			if !field.IsNil() {
+				field = field.Elem()
+				fieldType = fieldType.Elem()
+			}
+		}
 
-		name := fieldPrefix(prefix, fieldType)
+		name := fieldPrefix(prefix, fieldStructType)
 
-		v, ok := fieldType.Tag.Lookup("redact")
+		v, ok := fieldStructType.Tag.Lookup("redact")
 		if v == "-" {
 			continue
 		}
-		if !ok || v != "allow" {
-			logRedacted(field, fieldType.Type, name, encoder)
+
+		if field.Kind() == reflect.Ptr {
+			logValue(field, fieldType, name, encoder)
 			continue
 		}
 
-		logValue(field, fieldType.Type, name, encoder)
+		if field.Kind() == reflect.Struct {
+			logObject(field, fieldType, name, encoder)
+			continue
+		}
+
+		if !ok || v != "allow" {
+			logRedacted(field, fieldStructType.Type, name, encoder)
+			continue
+		}
+
+		logValue(field, fieldStructType.Type, name, encoder)
 	}
 }
 
