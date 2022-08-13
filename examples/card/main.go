@@ -1,3 +1,4 @@
+//go:generate go run ../../cli/zapredactor/main.go --destination redactor_gen.go
 package main
 
 import (
@@ -8,28 +9,28 @@ import (
 
 type Expiry struct {
 	Month int
-	Year  int `redact:"allow"`
+	Year  int `redact:",allow"`
 }
 
 type CreditCard struct {
-	PAN            string
-	CardHolder     string
+	PAN            string `json:"pan"`
+	CardHolder     string `redact:"card_holder"`
 	CVV            string
 	Expiry         Expiry
-	First4         string `redact:"allow"`
-	Last4          string `redact:"allow"`
+	First4         string `redact:",allow"`
+	Last4          string `redact:",allow"`
 	IntenralStatus string `redact:"-"` // This field won't make to the log.
 }
 
 type Address struct {
-	Street string
+	Street string `redact:","`
 	City   string
 }
 
 type Customer struct {
-	Name    string
-	Card    *CreditCard
-	Address Address
+	Name    string      `redact:""`
+	Card    *CreditCard `redact:""`
+	Address Address     `redact:""`
 }
 
 func main() {
@@ -66,6 +67,6 @@ func main() {
 		},
 	}
 
-	logger.Info("customer without card", zapredactor.Redact("customer", customerWithoutCard))
-	logger.Info("card added to customer", zapredactor.Redact("customer", customerWithCard))
+	logger.Info("customer without card", zapredactor.Redact("customer", &customerWithoutCard))
+	logger.Info("card added to customer", zapredactor.Redact("customer", &customerWithCard))
 }
