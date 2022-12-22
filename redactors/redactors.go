@@ -10,6 +10,17 @@ const (
 	notCompatible = "[redactor not compatible]"
 )
 
+type Redactor string
+
+const (
+	Default  Redactor = ""
+	PAN64    Redactor = "pan64"
+	BIN      Redactor = "bin"
+	Star     Redactor = "star"
+	Asterisk Redactor = "*"
+	Len      Redactor = "len"
+)
+
 var (
 	DefaultRedactedString = "[redacted]"
 
@@ -20,9 +31,9 @@ var (
 	}
 )
 
-// PAN64 is a redactor for PANs it ouputs the first 6 and the last 4. If the PAN is less than 12 digits the
+// PAN64Redactor is a redactor for PANs it ouputs the first 6 and the last 4. If the PAN is less than 12 digits the
 // DefaultRedactor is used.
-func PAN64(data interface{}) string {
+func PAN64Redactor(data interface{}) string {
 	if data == nil {
 		return ""
 	}
@@ -41,8 +52,8 @@ func PAN64(data interface{}) string {
 	return pan[:6] + strings.Repeat("*", len(pan)-6-4) + pan[len(pan)-4:]
 }
 
-// BIN is a redactor for PANs. It outputs the first 6 digits. If the PAN is less than 6 digits the DefaultRedactor is used.
-func BIN(data interface{}) string {
+// BINRedactor is a redactor for PANs. It outputs the first 6 digits. If the PAN is less than 6 digits the DefaultRedactor is used.
+func BINRedactor(data interface{}) string {
 	if data == nil {
 		return ""
 	}
@@ -61,8 +72,8 @@ func BIN(data interface{}) string {
 	return pan[:6]
 }
 
-// Star is a redactor for any string or *string. It returns a string with the same length but masked with "*".
-func Star(data interface{}) string {
+// StarRedactor is a redactor for any string or *string. It returns a string with the same length but masked with "*".
+func StarRedactor(data interface{}) string {
 	if data == nil {
 		return ""
 	}
@@ -78,9 +89,9 @@ func Star(data interface{}) string {
 	return strings.Repeat("*", l)
 }
 
-// Len is a redactor for arrays, string and *string. It will output the number of elements formatted as "[len:X]". If the
+// LenRedactor is a redactor for arrays, string and *string. It will output the number of elements formatted as "[len:X]". If the
 // given data is not supported it will try using reflection. If the given data is not an array it will return not compatible.
-func Len(data interface{}) string {
+func LenRedactor(data interface{}) string {
 	var l int
 	switch p := data.(type) {
 	case nil:
