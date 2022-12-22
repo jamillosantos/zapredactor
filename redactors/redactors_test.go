@@ -39,7 +39,7 @@ func TestPAN64(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("should format %v to %s", tt.data, tt.want), func(t *testing.T) {
-			got := PAN64(tt.data)
+			got := PAN64Redactor(tt.data)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -73,7 +73,7 @@ func TestBIN(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("should format %v to %s", tt.data, tt.want), func(t *testing.T) {
-			got := BIN(tt.data)
+			got := BINRedactor(tt.data)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -92,7 +92,7 @@ func TestStar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%v to %v", tt.data, tt.want), func(t *testing.T) {
-			got := Star(tt.data)
+			got := StarRedactor(tt.data)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -125,13 +125,13 @@ func TestLen(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%T", tt.data), func(t *testing.T) {
-			got := Len(tt.data)
+			got := LenRedactor(tt.data)
 			assert.Equal(t, fmt.Sprintf("[len:%d]", tt.want), got)
 		})
 	}
 
 	t.Run("not compatible", func(t *testing.T) {
-		got := Len(12345)
+		got := LenRedactor(12345)
 		assert.Equal(t, notCompatible, got)
 	})
 }

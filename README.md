@@ -10,6 +10,7 @@ redacted by default unless you explicitly mark it.
 To log any information as redacted you need to use the `zapredactor.Redact` function. It returns a `zap.Field` and is
 designed to work just like `zap.String` (for example).
 
+## Redacting fields with Code Generation
 
 ### Tagging fields
 
@@ -94,15 +95,115 @@ type Card struct {
 }
 ```
 
-## Available redactors
+## Redacting fields with Reflection
 
-| Name            | Description                                                                   | Types compatible                                 |
-|-----------------|-------------------------------------------------------------------------------|--------------------------------------------------|
-| (empty string)  | Returns `[redacted]` regardless the input.                                    | `any`                                            |
-| `pan`           | Redacts a card number outputting only its first 6 and last 4 digits of a PAN. | `string`, `*string`                              |
-| `bin`           | Redacts a card number outputting only its first 6.                            | `string`, `*string`                              |
-| `star`, `*`     | Redacts the a given string (or *string).                                      | `string`, `*string`                              |
-| `len`           | Redacts the first digit of a PAN.                                             | `string`, `*string`, arrays (through reflection) |
+This method uses reflection to iterate over all fields, redacting whenever needd. It is indicated when you need to log a
+struct that you cannot annotate (eg. an struct from a third-party library).
+
+As the other method, all fields are redacted by default. For a field to be not redacted, you need to explicitly inform
+the redactor.
+
+__Example 1__: The following example will redact with the definitions predefined (examples/reflectiondemo/main.go).
+
+```go
+package main
+
+import (
+  "go.uber.org/zap"
+
+  "github.com/jamillosantos/zapredactor/redactors"
+  "github.com/jamillosantos/zapredactor/redactreflection"
+)
+
+type Demo struct {
+  String string
+  Int    int
+  PAN    string
+}
+
+var (
+  // redactor can be reused multiple times.
+  redactor = redactreflection.Redactor(
+    redactreflection.WithAllowFields("String"),
+    redactreflection.WithRedactor("PAN", redactors.PAN64),
+  )
+)
+
+func main() {
+  // Initialize logger
+  logger, err := zap.NewDevelopment()
+  if err != nil {
+    panic(err)
+  }
+
+  logger.Info("demo entry reusing the redactor configuration 1", redactor("demo", &Demo{
+    String: "string",
+    Int:    1,
+    PAN:    "1234567890124321",
+  }))
+  // Output: {"demo": {"String": "string", "Int": "[redacted]", "PAN": "123456******4321"}}
+  logger.Info("demo entry reusing the redactor configuration 2", redactor("demo", &Demo{
+    String: "string 2",
+    Int:    2,
+    PAN:    "1111112222223333",
+  }))
+  // Output: {"demo": {"String": "string 2", "Int": "[redacted]", "PAN": "111111******3333"}}
+}
+
+```
+
+__Example 2__: The following example will redact with the definitions inline. So, for each call you need to specify the 
+redactor configuration (examples/reflectiondemo2/main.go).
+
+```go
+package main
+
+import (
+  "go.uber.org/zap"
+
+  "github.com/jamillosantos/zapredactor/redactors"
+  "github.com/jamillosantos/zapredactor/redactreflection"
+)
+
+type Demo struct {
+  String string
+  Int    int
+  PAN    string
+}
+
+func main() {
+  // Initialize logger
+  logger, err := zap.NewDevelopment()
+  if err != nil {
+    panic(err)
+  }
+
+  demo := Demo{
+    String: "string",
+    Int:    1,
+    PAN:    "1234567890124321",
+  }
+
+  logger.Info("demo entry with all fields redacted", redactreflection.Redact("demo", &demo))
+  // Output: {"demo": {"String": "[redacted]", "Int": "[redacted]", "PAN": "[redacted]"}}
+  logger.Info("demo entry with one field redacted", redactreflection.Redact("demo", &demo, redactreflection.WithAllowFields("String")))
+  // Output: {"demo": {"String": "string", "Int": "[redacted]", "PAN": "[redacted]"}}
+  logger.Info("demo entry with a custom redactor", redactreflection.Redact("demo", &demo, redactreflection.WithRedactor("PAN", redactors.PAN64)))
+  // Output: {"demo": {"String": "[redacted]", "Int": "[redacted]", "PAN": "123456******4321"}}
+  logger.Info("demo entry hiding a field", redactreflection.Redact("demo", &demo, redactreflection.WithHiddenField("PAN")))
+  // Output: {"demo": {"String": "[redacted]", "Int": "[redacted]"}}
+}
+```
+
+## Redactors
+
+| Name            | Code              | Description                                                                   | Types compatible                                 |
+|-----------------|-------------------|-------------------------------------------------------------------------------|--------------------------------------------------|
+| (empty string)  | `redactors.Default` | Returns `[redacted]` regardless the input.                                    | `any`                                            |
+| `pan`           | `redactors.PAN64`   | Redacts a card number outputting only its first 6 and last 4 digits of a PAN. | `string`, `*string`                              |
+| `bin`           | `redactors.BIN`     | Redacts a card number outputting only its first 6.                            | `string`, `*string`                              |
+| `star`, `*`     | `redactors.Star`    | Redacts the a given string (or *string).                                      | `string`, `*string`                              |
+| `len`           | `redactors.Len`     | Redacts the first digit of a PAN.                                             | `string`, `*string`, arrays (through reflection) |
 
 ### Anatomy of a redactor
 
