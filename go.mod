@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/golang/mock v1.6.0
 	github.com/jamillosantos/go-my-ast-hurts v0.0.0-20220812122024-5b98a10e2844
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.8.1
 	github.com/valyala/quicktemplate v1.7.0
 	go.uber.org/zap v1.27.0
