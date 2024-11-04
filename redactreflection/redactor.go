@@ -22,17 +22,19 @@ type redactByReflection struct {
 	fieldNameExtractor func(s reflect.StructField) string
 }
 
+type fieldVisitor func(encoder zapcore.ObjectEncoder, fieldPath, fieldName string, value interface{})
+
 func (r redactByReflection) Redact(encoder zapcore.ObjectEncoder) error {
-	walkFields(r.val, "", r.fieldNameExtractor, func(field string, value interface{}) {
-		info, _ := r.info[field]
+	walkFields(encoder, r.val, "", r.fieldNameExtractor, func(encoder zapcore.ObjectEncoder, fieldPath, fieldName string, value interface{}) {
+		info, _ := r.info[fieldPath]
 		if info.hidden {
 			return
 		}
 		if info.allow {
-			addField(encoder, field, value)
+			addField(encoder, fieldName, value)
 			return
 		}
-		encoder.AddString(field, zapredactor.RedactValue(value, info.redactor))
+		encoder.AddString(fieldName, zapredactor.RedactValue(value, info.redactor))
 	})
 	return nil
 }
@@ -78,8 +80,12 @@ func addField(encoder zapcore.ObjectEncoder, field string, value interface{}) {
 		encoder.AddBinary(field, v)
 	case time.Time:
 		encoder.AddTime(field, v)
+	case *time.Time:
+		encoder.AddTime(field, *v)
 	case time.Duration:
 		encoder.AddDuration(field, v)
+	case *time.Duration:
+		encoder.AddDuration(field, *v)
 	case error:
 		encoder.AddString(field, v.Error())
 	case zapcore.ObjectMarshaler:
@@ -93,31 +99,79 @@ func addField(encoder zapcore.ObjectEncoder, field string, value interface{}) {
 
 // walkFields walks the fields of the given object using reflection. It returns the list of fields.
 // Whenever a field is a struct, it is recursively walked.
-func walkFields(obj interface{}, prefix string, fieldNameFormatter func(p reflect.StructField) string, f func(field string, value interface{})) {
+func walkFields(encoder zapcore.ObjectEncoder, obj interface{}, prefix string, fieldNameFormatter func(p reflect.StructField) string, f fieldVisitor) {
 	val := reflect.ValueOf(obj)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
-	if val.Kind() != reflect.Struct {
-		return
+	switch val.Kind() {
+	case reflect.Struct:
+		runStruct(encoder, val, prefix, fieldNameFormatter, f)
+	case reflect.Map:
+		runMap(encoder, val, prefix, fieldNameFormatter, f)
+	default:
 	}
+}
+
+func runMap(encoder zapcore.ObjectEncoder, val reflect.Value, prefix string, fieldNameFormatter func(p reflect.StructField) string, f fieldVisitor) {
+	for _, key := range val.MapKeys() {
+		fieldName := key.String()
+		fieldPath := fieldName
+		if prefix != "" {
+			fieldPath = prefix + "." + fieldName
+		}
+		fieldValue := val.MapIndex(key).Interface()
+		switch fv := fieldValue.(type) {
+		case time.Time:
+			f(encoder, fieldPath, fieldName, fv)
+			continue
+		}
+		mapVal := reflect.ValueOf(fieldValue)
+		switch {
+		case mapVal.Kind() == reflect.Struct:
+			_ = encoder.AddObject(fieldName, zapcore.ObjectMarshalerFunc(func(encoder zapcore.ObjectEncoder) error {
+				walkFields(encoder, mapVal.Interface(), fieldPath, fieldNameFormatter, f)
+				return nil
+			}))
+		case mapVal.Kind() == reflect.Map:
+			_ = encoder.AddObject(fieldName, zapcore.ObjectMarshalerFunc(func(encoder zapcore.ObjectEncoder) error {
+				runMap(encoder, mapVal, fieldPath, fieldNameFormatter, f)
+				return nil
+			}))
+		default:
+			f(encoder, fieldPath, fieldName, fieldValue)
+		}
+	}
+}
+
+func runStruct(encoder zapcore.ObjectEncoder, val reflect.Value, prefix string, fieldNameFormatter func(p reflect.StructField) string, f fieldVisitor) {
 	typ := val.Type()
-	fields := make([]string, 0, val.NumField())
 	for i := 0; i < val.NumField(); i++ {
 		field := typ.Field(i)
 		if field.PkgPath != "" {
 			continue
 		}
-		fieldName := prefix
+		fieldPath := prefix
 		if prefix != "" {
-			fieldName += "."
+			fieldPath += "."
 		}
-		fieldName += fieldNameFormatter(field)
-		if field.Type.Kind() == reflect.Struct {
-			walkFields(val.Field(i).Interface(), fieldName, fieldNameFormatter, f)
+		fieldNameKey := fieldNameFormatter(field)
+		fieldPath += fieldNameKey
+		switch field.Type.Kind() {
+		case reflect.Struct:
+			_ = encoder.AddObject(fieldNameKey, zapcore.ObjectMarshalerFunc(func(encoder zapcore.ObjectEncoder) error {
+				runStruct(encoder, val.Field(i), fieldPath, fieldNameFormatter, f)
+				return nil
+			}))
 			continue
+		case reflect.Map:
+			_ = encoder.AddObject(fieldNameKey, zapcore.ObjectMarshalerFunc(func(encoder zapcore.ObjectEncoder) error {
+				runMap(encoder, val.Field(i), fieldPath, fieldNameFormatter, f)
+				return nil
+			}))
+			continue
+		default:
+			f(encoder, fieldPath, fieldNameKey, val.Field(i).Interface())
 		}
-		f(fieldName, val.Field(i).Interface())
-		fields = append(fields, fieldName)
 	}
 }
