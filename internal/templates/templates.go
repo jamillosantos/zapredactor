@@ -50,9 +50,9 @@ var (
 		"[]builtin.byte":      "Binary",
 	}
 
-	// arrayTypes maps a field type to the zaparray type that logs it.
+	// arrayTypes maps a field type to the zap field constructor that logs it.
 	arrayTypes = map[string]string{
-		"[]builtin.string":     "StringArray",
+		"[]builtin.string":     "Strings",
 		"[]builtin.int":        "Ints",
 		"[]builtin.int8":       "Int8s",
 		"[]builtin.int16":      "Int16s",
@@ -79,8 +79,8 @@ func isAllowedValue(field domain.RedactedField) bool {
 	return !field.Skip && !field.IsStruct && !field.IsRedacted
 }
 
-// UsesZapArray reports whether the code rendered for the field references the zaparray package.
-func UsesZapArray(field domain.RedactedField) bool {
+// UsesZap reports whether the code rendered for the field references the zap package.
+func UsesZap(field domain.RedactedField) bool {
 	_, ok := arrayTypes[field.Type]
 	return ok && isAllowedValue(field)
 }

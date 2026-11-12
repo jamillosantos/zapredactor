@@ -3,111 +3,111 @@ package main
 
 import (
 	"github.com/jamillosantos/zapredactor"
-	"github.com/jamillosantos/zapredactor/zaparray"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 func (s Demo) Redact(encoder zapcore.ObjectEncoder) error {
 	encoder.AddString("String", s.String)
-	encoder.AddArray("Strings", zaparray.StringArray(s.Strings))
+	zap.Strings("Strings", s.Strings).AddTo(encoder)
 	if s.Stringp == nil {
 		encoder.AddReflected("Stringp", nil)
 	} else {
 		encoder.AddString("Stringp", *s.Stringp)
 	}
 	encoder.AddInt("Int", s.Int)
-	encoder.AddArray("Ints", zaparray.Ints(s.Ints))
+	zap.Ints("Ints", s.Ints).AddTo(encoder)
 	if s.Intp == nil {
 		encoder.AddReflected("Intp", nil)
 	} else {
 		encoder.AddInt("Intp", *s.Intp)
 	}
 	encoder.AddInt8("Int8", s.Int8)
-	encoder.AddArray("Int8s", zaparray.Int8s(s.Int8s))
+	zap.Int8s("Int8s", s.Int8s).AddTo(encoder)
 	if s.Int8p == nil {
 		encoder.AddReflected("Int8p", nil)
 	} else {
 		encoder.AddInt8("Int8p", *s.Int8p)
 	}
 	encoder.AddInt16("Int16", s.Int16)
-	encoder.AddArray("Int16s", zaparray.Int16s(s.Int16s))
+	zap.Int16s("Int16s", s.Int16s).AddTo(encoder)
 	if s.Int16p == nil {
 		encoder.AddReflected("Int16p", nil)
 	} else {
 		encoder.AddInt16("Int16p", *s.Int16p)
 	}
 	encoder.AddInt32("Int32", s.Int32)
-	encoder.AddArray("Int32s", zaparray.Int32s(s.Int32s))
+	zap.Int32s("Int32s", s.Int32s).AddTo(encoder)
 	if s.Int32p == nil {
 		encoder.AddReflected("Int32p", nil)
 	} else {
 		encoder.AddInt32("Int32p", *s.Int32p)
 	}
 	encoder.AddInt64("Int64", s.Int64)
-	encoder.AddArray("Int64s", zaparray.Int64s(s.Int64s))
+	zap.Int64s("Int64s", s.Int64s).AddTo(encoder)
 	if s.Int64p == nil {
 		encoder.AddReflected("Int64p", nil)
 	} else {
 		encoder.AddInt64("Int64p", *s.Int64p)
 	}
 	encoder.AddUint("Uint", s.Uint)
-	encoder.AddArray("Uints", zaparray.Uints(s.Uints))
+	zap.Uints("Uints", s.Uints).AddTo(encoder)
 	if s.Uintp == nil {
 		encoder.AddReflected("Uintp", nil)
 	} else {
 		encoder.AddUint("Uintp", *s.Uintp)
 	}
 	encoder.AddUint8("Uint8", s.Uint8)
-	encoder.AddArray("Uint8s", zaparray.Uint8s(s.Uint8s))
+	zap.Uint8s("Uint8s", s.Uint8s).AddTo(encoder)
 	if s.Uint8p == nil {
 		encoder.AddReflected("Uint8p", nil)
 	} else {
 		encoder.AddUint8("Uint8p", *s.Uint8p)
 	}
 	encoder.AddUint16("Uint16", s.Uint16)
-	encoder.AddArray("Uint16s", zaparray.Uint16s(s.Uint16s))
+	zap.Uint16s("Uint16s", s.Uint16s).AddTo(encoder)
 	if s.Uint16p == nil {
 		encoder.AddReflected("Uint16p", nil)
 	} else {
 		encoder.AddUint16("Uint16p", *s.Uint16p)
 	}
 	encoder.AddUint32("Uint32", s.Uint32)
-	encoder.AddArray("Uint32s", zaparray.Uint32s(s.Uint32s))
+	zap.Uint32s("Uint32s", s.Uint32s).AddTo(encoder)
 	if s.Uint32p == nil {
 		encoder.AddReflected("Uint32p", nil)
 	} else {
 		encoder.AddUint32("Uint32p", *s.Uint32p)
 	}
 	encoder.AddUint64("Uint64", s.Uint64)
-	encoder.AddArray("Uint64s", zaparray.Uint64s(s.Uint64s))
+	zap.Uint64s("Uint64s", s.Uint64s).AddTo(encoder)
 	if s.Uint64p == nil {
 		encoder.AddReflected("Uint64p", nil)
 	} else {
 		encoder.AddUint64("Uint64p", *s.Uint64p)
 	}
 	encoder.AddFloat32("Float32", s.Float32)
-	encoder.AddArray("Float32s", zaparray.Float32s(s.Float32s))
+	zap.Float32s("Float32s", s.Float32s).AddTo(encoder)
 	if s.Float32p == nil {
 		encoder.AddReflected("Float32p", nil)
 	} else {
 		encoder.AddFloat32("Float32p", *s.Float32p)
 	}
 	encoder.AddFloat64("Float64", s.Float64)
-	encoder.AddArray("Float64s", zaparray.Float64s(s.Float64s))
+	zap.Float64s("Float64s", s.Float64s).AddTo(encoder)
 	if s.Float64p == nil {
 		encoder.AddReflected("Float64p", nil)
 	} else {
 		encoder.AddFloat64("Float64p", *s.Float64p)
 	}
 	encoder.AddComplex64("Complex64", s.Complex64)
-	encoder.AddArray("Complex64s", zaparray.Complex64s(s.Complex64s))
+	zap.Complex64s("Complex64s", s.Complex64s).AddTo(encoder)
 	if s.Complex64p == nil {
 		encoder.AddReflected("Complex64p", nil)
 	} else {
 		encoder.AddComplex64("Complex64p", *s.Complex64p)
 	}
 	encoder.AddComplex128("Complex128", s.Complex128)
-	encoder.AddArray("Complex128s", zaparray.Complex128s(s.Complex128s))
+	zap.Complex128s("Complex128s", s.Complex128s).AddTo(encoder)
 	if s.Complex128p == nil {
 		encoder.AddReflected("Complex128p", nil)
 	} else {
@@ -120,14 +120,14 @@ func (s Demo) Redact(encoder zapcore.ObjectEncoder) error {
 		encoder.AddBool("Boolp", *s.Boolp)
 	}
 	encoder.AddTime("Time", s.Time)
-	encoder.AddArray("Times", zaparray.Times(s.Times))
+	zap.Times("Times", s.Times).AddTo(encoder)
 	if s.Timep == nil {
 		encoder.AddReflected("Timep", nil)
 	} else {
 		encoder.AddTime("Timep", *s.Timep)
 	}
 	encoder.AddDuration("Duration", s.Duration)
-	encoder.AddArray("Durations", zaparray.Durations(s.Durations))
+	zap.Durations("Durations", s.Durations).AddTo(encoder)
 	if s.Durationp == nil {
 		encoder.AddReflected("Durationp", nil)
 	} else {
