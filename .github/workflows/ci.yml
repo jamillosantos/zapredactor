@@ -1,6 +1,8 @@
-name: Test
+name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
 
 permissions:
@@ -8,9 +10,18 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: make lint
+
   test:
     runs-on: ubuntu-latest
     steps:
