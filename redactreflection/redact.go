@@ -24,9 +24,12 @@ func newRedactor(val interface{}, opts ...ReflectionOption) (r *redactByReflecti
 	return
 }
 
-// Redactor returns a factory of redactors based on the given configuration.
+// Redactor returns a factory of redactors based on the given configuration. The options are applied only once.
 func Redactor(opts ...ReflectionOption) func(field string, val interface{}) zap.Field {
+	base := newRedactor(nil, opts...)
 	return func(field string, val interface{}) zap.Field {
-		return Redact(field, val, opts...)
+		r := *base // The copy shares the info map, which is only read from here on.
+		r.val = val
+		return zapredactor.Redact(field, &r)
 	}
 }
