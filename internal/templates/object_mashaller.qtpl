@@ -6,8 +6,8 @@ package {%s info.Name %}
 
 import (
 	"github.com/jamillosantos/zapredactor"
-	{%- if info.IncludeZapArray -%}
-	"github.com/jamillosantos/zapredactor/zaparray"
+	{%- if info.IncludeZap -%}
+	"go.uber.org/zap"
 	{%- endif -%}
 	"go.uber.org/zap/zapcore"
 )
@@ -45,7 +45,7 @@ encoder.Add{%s t %}("{%j= field.ExportedName %}", {%- if field.IsPointer -%}*{%-
 {%- endfunc %}
 
 {% func RenderArray(field domain.RedactedField, t string) -%}
-encoder.AddArray("{%j= field.ExportedName %}", zaparray.{%s t %}(s.{%s field.Name %}))
+zap.{%s t %}("{%j= field.ExportedName %}", s.{%s field.Name %}).AddTo(encoder)
 {%- endfunc %}
 
 {% func RenderValueRedacted(field domain.RedactedField, redactor string) -%}

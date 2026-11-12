@@ -1,7 +1,7 @@
 package domain
 
 type Package struct {
-	Name            string
-	Structs         []RedactedStruct
-	IncludeZapArray bool
+	Name       string
+	Structs    []RedactedStruct
+	IncludeZap bool
 }
