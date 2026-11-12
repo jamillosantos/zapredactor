@@ -134,6 +134,11 @@ func (s Demo) Redact(encoder zapcore.ObjectEncoder) error {
 		encoder.AddDuration("Durationp", *s.Durationp)
 	}
 	encoder.AddBinary("Byte", s.Byte)
+	if s.NamedStringp == nil {
+		encoder.AddReflected("named_stringp", nil)
+	} else {
+		encoder.AddString("named_stringp", *s.NamedStringp)
+	}
 	encoder.AddString("RedactedString", zapredactor.RedactValue(s.RedactedString, ""))
 	encoder.AddString("RedactedStringWithCardData", zapredactor.RedactValue(s.RedactedStringWithCardData, "pan64"))
 	encoder.AddString("RedactedStrings", zapredactor.RedactValue(s.RedactedStrings, ""))

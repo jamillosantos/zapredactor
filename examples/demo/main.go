@@ -65,6 +65,7 @@ type Demo struct {
 	Durations                  []time.Duration `redact:",allow"`
 	Durationp                  *time.Duration  `redact:",allow"`
 	Byte                       []byte          `redact:",allow"`
+	NamedStringp               *string         `json:"named_stringp" redact:",allow"`
 	RedactedString             string
 	RedactedStringWithCardData string `redact:",,pan64"`
 	RedactedStrings            []string
