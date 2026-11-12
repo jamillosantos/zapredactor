@@ -191,3 +191,8 @@ func (s Demo) Redact(encoder zapcore.ObjectEncoder) error {
 	encoder.AddString("RedactedByte", zapredactor.RedactValue(s.RedactedByte, ""))
 	return nil
 }
+
+// MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
+func (s Demo) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
+	return s.Redact(encoder)
+}

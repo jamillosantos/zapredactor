@@ -12,6 +12,11 @@ func (s Expiry) Redact(encoder zapcore.ObjectEncoder) error {
 	return nil
 }
 
+// MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
+func (s Expiry) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
+	return s.Redact(encoder)
+}
+
 func (s CreditCard) Redact(encoder zapcore.ObjectEncoder) error {
 	encoder.AddString("pan", zapredactor.RedactValue(s.PAN, "pan64"))
 	encoder.AddString("card_holder", zapredactor.RedactValue(s.CardHolder, ""))
@@ -22,10 +27,20 @@ func (s CreditCard) Redact(encoder zapcore.ObjectEncoder) error {
 	return nil
 }
 
+// MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
+func (s CreditCard) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
+	return s.Redact(encoder)
+}
+
 func (s Address) Redact(encoder zapcore.ObjectEncoder) error {
 	encoder.AddString("Street", zapredactor.RedactValue(s.Street, ""))
 	encoder.AddString("City", zapredactor.RedactValue(s.City, ""))
 	return nil
+}
+
+// MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
+func (s Address) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
+	return s.Redact(encoder)
 }
 
 func (s Customer) Redact(encoder zapcore.ObjectEncoder) error {
@@ -37,4 +52,9 @@ func (s Customer) Redact(encoder zapcore.ObjectEncoder) error {
 	}
 	encoder.AddObject("Address", zapredactor.RedactObject(&s.Address))
 	return nil
+}
+
+// MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
+func (s Customer) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
+	return s.Redact(encoder)
 }
