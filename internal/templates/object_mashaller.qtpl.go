@@ -158,7 +158,7 @@ func StreamRenderValueType(qw422016 *qt422016.Writer, field domain.RedactedField
 		qw422016.N().S(` == nil {
 		encoder.AddReflected("`)
 //line object_mashaller.qtpl:38
-		qw422016.E().S(field.ExportedName)
+		qw422016.N().J(field.ExportedName)
 //line object_mashaller.qtpl:38
 		qw422016.N().S(`", nil)
 	} else {
@@ -172,7 +172,7 @@ func StreamRenderValueType(qw422016 *qt422016.Writer, field domain.RedactedField
 //line object_mashaller.qtpl:41
 	qw422016.N().S(`("`)
 //line object_mashaller.qtpl:41
-	qw422016.E().S(field.ExportedName)
+	qw422016.N().J(field.ExportedName)
 //line object_mashaller.qtpl:41
 	qw422016.N().S(`",`)
 //line object_mashaller.qtpl:41
@@ -229,7 +229,7 @@ func StreamRenderArray(qw422016 *qt422016.Writer, field domain.RedactedField, t 
 //line object_mashaller.qtpl:47
 	qw422016.N().S(`encoder.AddArray("`)
 //line object_mashaller.qtpl:48
-	qw422016.E().S(field.ExportedName)
+	qw422016.N().J(field.ExportedName)
 //line object_mashaller.qtpl:48
 	qw422016.N().S(`", zaparray.`)
 //line object_mashaller.qtpl:48
@@ -275,7 +275,7 @@ func StreamRenderValueRedacted(qw422016 *qt422016.Writer, field domain.RedactedF
 //line object_mashaller.qtpl:51
 	qw422016.N().S(`encoder.AddString("`)
 //line object_mashaller.qtpl:52
-	qw422016.E().S(field.ExportedName)
+	qw422016.N().J(field.ExportedName)
 //line object_mashaller.qtpl:52
 	qw422016.N().S(`", zapredactor.RedactValue(s.`)
 //line object_mashaller.qtpl:52
@@ -283,7 +283,7 @@ func StreamRenderValueRedacted(qw422016 *qt422016.Writer, field domain.RedactedF
 //line object_mashaller.qtpl:52
 	qw422016.N().S(`, "`)
 //line object_mashaller.qtpl:52
-	qw422016.E().J(redactor)
+	qw422016.N().J(redactor)
 //line object_mashaller.qtpl:52
 	qw422016.N().S(`"))
 `)
@@ -330,7 +330,7 @@ func StreamRenderObjectRedacted(qw422016 *qt422016.Writer, field domain.Redacted
 		qw422016.N().S(` == nil {
 		encoder.AddReflected("`)
 //line object_mashaller.qtpl:58
-		qw422016.E().S(field.ExportedName)
+		qw422016.N().J(field.ExportedName)
 //line object_mashaller.qtpl:58
 		qw422016.N().S(`", nil)
 	} else {
@@ -340,7 +340,7 @@ func StreamRenderObjectRedacted(qw422016 *qt422016.Writer, field domain.Redacted
 //line object_mashaller.qtpl:60
 	qw422016.N().S(`	encoder.AddObject("`)
 //line object_mashaller.qtpl:61
-	qw422016.E().S(field.ExportedName)
+	qw422016.N().J(field.ExportedName)
 //line object_mashaller.qtpl:61
 	qw422016.N().S(`", zapredactor.RedactObject(`)
 //line object_mashaller.qtpl:61
