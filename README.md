@@ -202,6 +202,8 @@ A nil value is logged as `null`. You can also write the `Redact` method by hand 
   supported. The generated code does not compile, or the generator fails. Tag these fields with `redact:"-"`.
 - When every field of every generated struct in a package is allowed or skipped, the generated file has an unused
   import and does not compile. At least one field must be redacted or be a nested struct.
+- An allowed field that is a fixed-size array (`[4]string`) is read as a slice, and the generated code does not
+  compile. Use a slice, or tag the field with `redact:"-"`.
 - The generator reports errors by panicking.
 
 ## Reflection
