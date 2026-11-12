@@ -11,7 +11,8 @@ import (
 
 type RedactorFnc func(data interface{}) string
 
-// RedactorManager is a manager of redactors.
+// RedactorManager is a manager of redactors. The zero value is ready to use and has no redactors: every value is
+// redacted by the default redactor until RegisterRedactor is called.
 type RedactorManager struct {
 	redactors map[redactors.Redactor]RedactorFnc
 }
@@ -35,15 +36,21 @@ func init() {
 
 // RedactValue redacts a given data with the given redactor. If the redactor is not found, the default redactor is used.
 func (rm *RedactorManager) RedactValue(data interface{}, redactor redactors.Redactor) string {
-	r, ok := defaultRedactorManager.redactors[redactor]
+	r, ok := rm.redactors[redactor]
 	if !ok {
-		r = rm.redactors[""]
+		r, ok = rm.redactors[redactors.Default]
+	}
+	if !ok {
+		return redactors.DefaultRedactor(data)
 	}
 	return r(data)
 }
 
-// RegisterRedactor registers a new redactor.
+// RegisterRedactor registers a new redactor. It is not safe for concurrent use: call it at startup.
 func (rm *RedactorManager) RegisterRedactor(name redactors.Redactor, redactor RedactorFnc) {
+	if rm.redactors == nil {
+		rm.redactors = make(map[redactors.Redactor]RedactorFnc)
+	}
 	rm.redactors[name] = redactor
 }
 
