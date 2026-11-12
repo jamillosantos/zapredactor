@@ -25,6 +25,11 @@ func (s {%s s.Name %}) Redact(encoder zapcore.ObjectEncoder) error {
 	return nil
 }
 
+// MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
+func (s {%s s.Name %}) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
+	return s.Redact(encoder)
+}
+
 {% endfunc %}
 
 {% func RenderValueType(field domain.RedactedField, t string) -%}

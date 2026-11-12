@@ -173,14 +173,28 @@ package domain
 
 ### 3. Log it
 
-The generated file gives each struct a `Redact(zapcore.ObjectEncoder) error` method, which satisfies the
-`zapredactor.Redactable` interface. Pass the value, or a pointer to it, to `zapredactor.Redact`:
+The generated file gives each struct two methods:
+
+- `Redact(zapcore.ObjectEncoder) error`, which satisfies the `zapredactor.Redactable` interface.
+- `MarshalLogObject(zapcore.ObjectEncoder) error`, which calls `Redact` and satisfies zap's own
+  `zapcore.ObjectMarshaler` interface.
+
+So the value, or a pointer to it, can be logged with `zapredactor.Redact` or with `zap.Object`:
 
 ```go
 logger.Info("card added", zapredactor.Redact("card", &card))
+logger.Info("card added", zap.Object("card", card))
 ```
 
-A nil value is logged as `null`. You can also write the `Redact` method by hand for types the generator cannot handle.
+`zapredactor.Redact` logs a nil value as `null`. `zap.Object` panics on a nil pointer, so give it a value or a pointer
+you know is set.
+
+`zap.Any` and the sugared logger (`Infow`) redact as well, but **only when the value itself is the generated type**. A
+slice, a map or a struct that contains it goes through reflection and is logged with every field in clear, and so is
+anything passed to `zap.Reflect`. Log a slice with `zap.Objects("cards", cards)`.
+
+You can also write the `Redact` method by hand for types the generator cannot handle. Add a `MarshalLogObject` method
+that calls it if the type should work with `zap.Object` too.
 
 ### How fields are handled
 

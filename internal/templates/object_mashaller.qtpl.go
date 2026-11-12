@@ -107,278 +107,287 @@ func StreamRenderStruct(qw422016 *qt422016.Writer, s domain.RedactedStruct) {
 	qw422016.N().S(`	return nil
 }
 
+// MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
+func (s `)
+//line object_mashaller.qtpl:29
+	qw422016.E().S(s.Name)
+//line object_mashaller.qtpl:29
+	qw422016.N().S(`) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
+	return s.Redact(encoder)
+}
+
 `)
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 }
 
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 func WriteRenderStruct(qq422016 qtio422016.Writer, s domain.RedactedStruct) {
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 	StreamRenderStruct(qw422016, s)
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 	qt422016.ReleaseWriter(qw422016)
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 }
 
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 func RenderStruct(s domain.RedactedStruct) string {
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 	qb422016 := qt422016.AcquireByteBuffer()
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 	WriteRenderStruct(qb422016, s)
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 	qs422016 := string(qb422016.B)
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 	qt422016.ReleaseByteBuffer(qb422016)
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 	return qs422016
-//line object_mashaller.qtpl:28
+//line object_mashaller.qtpl:33
 }
 
-//line object_mashaller.qtpl:30
+//line object_mashaller.qtpl:35
 func StreamRenderValueType(qw422016 *qt422016.Writer, field domain.RedactedField, t string) {
-//line object_mashaller.qtpl:31
+//line object_mashaller.qtpl:36
 	if field.IsPointer {
-//line object_mashaller.qtpl:31
+//line object_mashaller.qtpl:36
 		qw422016.N().S(`	if s.`)
-//line object_mashaller.qtpl:32
+//line object_mashaller.qtpl:37
 		qw422016.E().S(field.Name)
-//line object_mashaller.qtpl:32
+//line object_mashaller.qtpl:37
 		qw422016.N().S(` == nil {
 		encoder.AddReflected("`)
-//line object_mashaller.qtpl:33
+//line object_mashaller.qtpl:38
 		qw422016.E().S(field.ExportedName)
-//line object_mashaller.qtpl:33
+//line object_mashaller.qtpl:38
 		qw422016.N().S(`", nil)
 	} else {
 `)
-//line object_mashaller.qtpl:35
+//line object_mashaller.qtpl:40
 	}
-//line object_mashaller.qtpl:35
+//line object_mashaller.qtpl:40
 	qw422016.N().S(`encoder.Add`)
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 	qw422016.E().S(t)
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 	qw422016.N().S(`("`)
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 	qw422016.E().S(field.ExportedName)
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 	qw422016.N().S(`",`)
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 	if field.IsPointer {
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 		qw422016.N().S(`*`)
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 	}
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 	qw422016.N().S(`s.`)
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 	qw422016.E().S(field.Name)
-//line object_mashaller.qtpl:36
+//line object_mashaller.qtpl:41
 	qw422016.N().S(`)
 `)
-//line object_mashaller.qtpl:37
+//line object_mashaller.qtpl:42
 	if field.IsPointer {
-//line object_mashaller.qtpl:37
+//line object_mashaller.qtpl:42
 		qw422016.N().S(`	}
 `)
-//line object_mashaller.qtpl:39
+//line object_mashaller.qtpl:44
 	}
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 }
 
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 func WriteRenderValueType(qq422016 qtio422016.Writer, field domain.RedactedField, t string) {
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 	StreamRenderValueType(qw422016, field, t)
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 	qt422016.ReleaseWriter(qw422016)
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 }
 
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 func RenderValueType(field domain.RedactedField, t string) string {
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 	qb422016 := qt422016.AcquireByteBuffer()
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 	WriteRenderValueType(qb422016, field, t)
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 	qs422016 := string(qb422016.B)
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 	qt422016.ReleaseByteBuffer(qb422016)
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 	return qs422016
-//line object_mashaller.qtpl:40
+//line object_mashaller.qtpl:45
 }
 
-//line object_mashaller.qtpl:42
+//line object_mashaller.qtpl:47
 func StreamRenderArray(qw422016 *qt422016.Writer, field domain.RedactedField, t string) {
-//line object_mashaller.qtpl:42
+//line object_mashaller.qtpl:47
 	qw422016.N().S(`encoder.AddArray("`)
-//line object_mashaller.qtpl:43
+//line object_mashaller.qtpl:48
 	qw422016.E().S(field.ExportedName)
-//line object_mashaller.qtpl:43
+//line object_mashaller.qtpl:48
 	qw422016.N().S(`", zaparray.`)
-//line object_mashaller.qtpl:43
+//line object_mashaller.qtpl:48
 	qw422016.E().S(t)
-//line object_mashaller.qtpl:43
+//line object_mashaller.qtpl:48
 	qw422016.N().S(`(s.`)
-//line object_mashaller.qtpl:43
+//line object_mashaller.qtpl:48
 	qw422016.E().S(field.Name)
-//line object_mashaller.qtpl:43
+//line object_mashaller.qtpl:48
 	qw422016.N().S(`))
 `)
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 }
 
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 func WriteRenderArray(qq422016 qtio422016.Writer, field domain.RedactedField, t string) {
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 	StreamRenderArray(qw422016, field, t)
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 	qt422016.ReleaseWriter(qw422016)
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 }
 
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 func RenderArray(field domain.RedactedField, t string) string {
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 	qb422016 := qt422016.AcquireByteBuffer()
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 	WriteRenderArray(qb422016, field, t)
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 	qs422016 := string(qb422016.B)
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 	qt422016.ReleaseByteBuffer(qb422016)
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 	return qs422016
-//line object_mashaller.qtpl:44
+//line object_mashaller.qtpl:49
 }
 
-//line object_mashaller.qtpl:46
+//line object_mashaller.qtpl:51
 func StreamRenderValueRedacted(qw422016 *qt422016.Writer, field domain.RedactedField, redactor string) {
-//line object_mashaller.qtpl:46
+//line object_mashaller.qtpl:51
 	qw422016.N().S(`encoder.AddString("`)
-//line object_mashaller.qtpl:47
+//line object_mashaller.qtpl:52
 	qw422016.E().S(field.ExportedName)
-//line object_mashaller.qtpl:47
+//line object_mashaller.qtpl:52
 	qw422016.N().S(`", zapredactor.RedactValue(s.`)
-//line object_mashaller.qtpl:47
+//line object_mashaller.qtpl:52
 	qw422016.E().S(field.Name)
-//line object_mashaller.qtpl:47
+//line object_mashaller.qtpl:52
 	qw422016.N().S(`, "`)
-//line object_mashaller.qtpl:47
+//line object_mashaller.qtpl:52
 	qw422016.E().J(redactor)
-//line object_mashaller.qtpl:47
+//line object_mashaller.qtpl:52
 	qw422016.N().S(`"))
 `)
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 }
 
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 func WriteRenderValueRedacted(qq422016 qtio422016.Writer, field domain.RedactedField, redactor string) {
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 	StreamRenderValueRedacted(qw422016, field, redactor)
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 	qt422016.ReleaseWriter(qw422016)
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 }
 
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 func RenderValueRedacted(field domain.RedactedField, redactor string) string {
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 	qb422016 := qt422016.AcquireByteBuffer()
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 	WriteRenderValueRedacted(qb422016, field, redactor)
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 	qs422016 := string(qb422016.B)
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 	qt422016.ReleaseByteBuffer(qb422016)
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 	return qs422016
-//line object_mashaller.qtpl:48
+//line object_mashaller.qtpl:53
 }
 
-//line object_mashaller.qtpl:50
+//line object_mashaller.qtpl:55
 func StreamRenderObjectRedacted(qw422016 *qt422016.Writer, field domain.RedactedField) {
-//line object_mashaller.qtpl:50
+//line object_mashaller.qtpl:55
 	qw422016.N().S(`	`)
-//line object_mashaller.qtpl:51
+//line object_mashaller.qtpl:56
 	if field.IsPointer {
-//line object_mashaller.qtpl:51
+//line object_mashaller.qtpl:56
 		qw422016.N().S(`	if s.`)
-//line object_mashaller.qtpl:52
+//line object_mashaller.qtpl:57
 		qw422016.E().S(field.Name)
-//line object_mashaller.qtpl:52
+//line object_mashaller.qtpl:57
 		qw422016.N().S(` == nil {
 		encoder.AddReflected("`)
-//line object_mashaller.qtpl:53
+//line object_mashaller.qtpl:58
 		qw422016.E().S(field.ExportedName)
-//line object_mashaller.qtpl:53
+//line object_mashaller.qtpl:58
 		qw422016.N().S(`", nil)
 	} else {
 `)
-//line object_mashaller.qtpl:55
+//line object_mashaller.qtpl:60
 	}
-//line object_mashaller.qtpl:55
+//line object_mashaller.qtpl:60
 	qw422016.N().S(`	encoder.AddObject("`)
-//line object_mashaller.qtpl:56
+//line object_mashaller.qtpl:61
 	qw422016.E().S(field.ExportedName)
-//line object_mashaller.qtpl:56
+//line object_mashaller.qtpl:61
 	qw422016.N().S(`", zapredactor.RedactObject(`)
-//line object_mashaller.qtpl:56
+//line object_mashaller.qtpl:61
 	if !field.IsPointer {
-//line object_mashaller.qtpl:56
+//line object_mashaller.qtpl:61
 		qw422016.N().S(`&`)
-//line object_mashaller.qtpl:56
+//line object_mashaller.qtpl:61
 	}
-//line object_mashaller.qtpl:56
+//line object_mashaller.qtpl:61
 	qw422016.N().S(`s.`)
-//line object_mashaller.qtpl:56
+//line object_mashaller.qtpl:61
 	qw422016.E().S(field.Name)
-//line object_mashaller.qtpl:56
+//line object_mashaller.qtpl:61
 	qw422016.N().S(`))
 `)
-//line object_mashaller.qtpl:57
+//line object_mashaller.qtpl:62
 	if field.IsPointer {
-//line object_mashaller.qtpl:57
+//line object_mashaller.qtpl:62
 		qw422016.N().S(`	}
 `)
-//line object_mashaller.qtpl:59
+//line object_mashaller.qtpl:64
 	}
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 }
 
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 func WriteRenderObjectRedacted(qq422016 qtio422016.Writer, field domain.RedactedField) {
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 	StreamRenderObjectRedacted(qw422016, field)
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 	qt422016.ReleaseWriter(qw422016)
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 }
 
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 func RenderObjectRedacted(field domain.RedactedField) string {
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 	qb422016 := qt422016.AcquireByteBuffer()
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 	WriteRenderObjectRedacted(qb422016, field)
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 	qs422016 := string(qb422016.B)
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 	qt422016.ReleaseByteBuffer(qb422016)
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 	return qs422016
-//line object_mashaller.qtpl:60
+//line object_mashaller.qtpl:65
 }
