@@ -16,11 +16,10 @@ var (
 	destination = "-"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd is the generator: it reads a package and writes the Redact methods for its tagged structs.
 var rootCmd = &cobra.Command{
-	Use:   "zapredactor",
-	Short: "A brief description of your application",
-	Long:  `.`,
+	Use:   "zapredactor [package]",
+	Short: "Generates the Redact method for the structs that have redact tags",
 	Run: func(cmd *cobra.Command, args []string) {
 		env, err := mah.NewEnvironment()
 		if err != nil {
@@ -86,8 +85,7 @@ func hasRedactorTags(s *mah.Struct) bool {
 	return false
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+// Execute runs the generator. It is called by main.main().
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -96,15 +94,5 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.Flags().StringVarP(&destination, "destination", "d", destination, `Destination file ("-" for stdout)`)
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.zapredactor.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
