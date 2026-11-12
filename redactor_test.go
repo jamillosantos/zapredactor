@@ -37,3 +37,14 @@ func TestRedactValue(t *testing.T) {
 	assert.Equal(t, redactors.DefaultRedactedString, RedactValue("secret", redactors.Default))
 	assert.Equal(t, redactors.DefaultRedactedString, RedactValue("secret", "unknown"), "an unknown redactor must not leak the value")
 }
+
+func TestRedactorManager_zeroValue(t *testing.T) {
+	var rm RedactorManager
+	assert.Equal(t, redactors.DefaultRedactedString, rm.RedactValue("secret", "custom"))
+
+	rm.RegisterRedactor("custom", func(interface{}) string { return "[custom]" })
+
+	assert.Equal(t, "[custom]", rm.RedactValue("secret", "custom"))
+	assert.Equal(t, redactors.DefaultRedactedString, rm.RedactValue("secret", "unknown"))
+	assert.Equal(t, redactors.DefaultRedactedString, RedactValue("secret", "custom"), "a manager must not register on the default one")
+}
