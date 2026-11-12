@@ -59,7 +59,7 @@ var rootCmd = &cobra.Command{
 		templates.WriteRedactor(buff, p)
 		formatted, err := format.Source(buff.Bytes())
 		if err != nil {
-			os.Stdout.Write(buff.Bytes())
+			_, _ = os.Stdout.Write(buff.Bytes())
 			panic(err)
 		}
 		dst := os.Stdout
