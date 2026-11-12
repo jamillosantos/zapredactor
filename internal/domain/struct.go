@@ -52,10 +52,10 @@ func getIsStruct(refType myasthurts.RefType) bool {
 
 func getRedactor(tag myasthurts.Tag) string {
 	t := tag.TagParamByName("redact")
-	if t == nil || len(t.Options) < 3 {
+	if t == nil || len(t.Options) < 2 {
 		return ""
 	}
-	return t.Options[2]
+	return t.Options[1]
 }
 
 func getSkip(tag myasthurts.Tag) bool {

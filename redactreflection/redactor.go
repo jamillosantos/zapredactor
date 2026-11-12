@@ -2,6 +2,7 @@ package redactreflection
 
 import (
 	"reflect"
+	"strings"
 	"time"
 
 	"go.uber.org/zap/zapcore"
@@ -148,7 +149,7 @@ func runStruct(encoder zapcore.ObjectEncoder, val reflect.Value, prefix string, 
 	typ := val.Type()
 	for i := 0; i < val.NumField(); i++ {
 		field := typ.Field(i)
-		if field.PkgPath != "" {
+		if field.PkgPath != "" || isSkippedByTag(field) {
 			continue
 		}
 		fieldPath := prefix
@@ -157,21 +158,29 @@ func runStruct(encoder zapcore.ObjectEncoder, val reflect.Value, prefix string, 
 		}
 		fieldNameKey := fieldNameFormatter(field)
 		fieldPath += fieldNameKey
-		switch field.Type.Kind() {
-		case reflect.Struct:
+		kind := field.Type.Kind()
+		switch {
+		case kind == reflect.Struct && field.Type != timeType:
 			_ = encoder.AddObject(fieldNameKey, zapcore.ObjectMarshalerFunc(func(encoder zapcore.ObjectEncoder) error {
 				runStruct(encoder, val.Field(i), fieldPath, fieldNameFormatter, f)
 				return nil
 			}))
-			continue
-		case reflect.Map:
+		case kind == reflect.Map:
 			_ = encoder.AddObject(fieldNameKey, zapcore.ObjectMarshalerFunc(func(encoder zapcore.ObjectEncoder) error {
 				runMap(encoder, val.Field(i), fieldPath, fieldNameFormatter, f)
 				return nil
 			}))
-			continue
 		default:
 			f(encoder, fieldPath, fieldNameKey, val.Field(i).Interface())
 		}
 	}
+}
+
+// timeType is logged as a value instead of being walked: all its fields are unexported.
+var timeType = reflect.TypeOf(time.Time{})
+
+// isSkippedByTag reports whether the field is tagged with `redact:"-"`.
+func isSkippedByTag(field reflect.StructField) bool {
+	name, _, _ := strings.Cut(field.Tag.Get("redact"), ",")
+	return name == "-"
 }

@@ -13,13 +13,13 @@ type Expiry struct {
 }
 
 type CreditCard struct {
-	PAN            string `json:"pan"`
+	PAN            string `json:"pan" redact:",,pan64"` // Logged as first 6 and last 4 digits.
 	CardHolder     string `redact:"card_holder"`
-	CVV            string
+	CVV            string `redact:",,*"` // Logged as one "*" per character.
 	Expiry         Expiry
 	First4         string `redact:",allow"`
 	Last4          string `redact:",allow"`
-	IntenralStatus string `redact:"-"` // This field won't make to the log.
+	InternalStatus string `redact:"-"` // Never logged.
 }
 
 type Address struct {
@@ -48,7 +48,7 @@ func main() {
 	}
 
 	customerWithCard := Customer{
-		Name: "Customer without Card",
+		Name: "Customer with Card",
 		Card: &CreditCard{
 			PAN:        "1234123412344321",
 			CardHolder: "Snake Eyes Joe",
@@ -59,7 +59,7 @@ func main() {
 			},
 			First4:         "1234",
 			Last4:          "4321",
-			IntenralStatus: "pending",
+			InternalStatus: "pending",
 		},
 		Address: Address{
 			Street: "Rua do Professor",

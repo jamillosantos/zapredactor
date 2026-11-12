@@ -165,6 +165,36 @@ func Test_redactByReflection_Redact(t *testing.T) {
 		assert.NotContains(t, logString, `"subField1"`)
 	})
 
+	t.Run("should skip a field tagged with redact:\"-\"", func(t *testing.T) {
+		var logData bytes.Buffer
+		c := zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()), zapcore.AddSync(&logData), zapcore.DebugLevel)
+		logger := zap.New(c)
+
+		logger.Info("message", Redact("data", struct {
+			Kept    string
+			Skipped string `redact:"-"`
+		}{Kept: "kept_value", Skipped: "skipped_value"}, WithAllowFields("Kept", "Skipped", "-")))
+
+		_ = logger.Sync()
+		assert.Contains(t, logData.String(), `"data":{"Kept":"kept_value"}`)
+	})
+
+	t.Run("should log a time.Time struct field as a value", func(t *testing.T) {
+		var logData bytes.Buffer
+		c := zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()), zapcore.AddSync(&logData), zapcore.DebugLevel)
+		logger := zap.New(c)
+
+		date := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		logger.Info("message", Redact("data", struct {
+			Allowed  time.Time
+			Redacted time.Time
+		}{Allowed: date, Redacted: date}, WithAllowFields("Allowed")))
+
+		_ = logger.Sync()
+		assert.Contains(t, logData.String(), `"data":{"Allowed":1609459200,"Redacted":"[redacted]"}`)
+	})
+
 	t.Run("should render all fields types", func(t *testing.T) {
 		var logData bytes.Buffer
 		c := zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()), zapcore.AddSync(&logData), zapcore.DebugLevel)
