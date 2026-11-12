@@ -30,7 +30,7 @@ func (s {%s s.Name %}) Redact(encoder zapcore.ObjectEncoder) error {
 {% func RenderValueType(field domain.RedactedField, t string) -%}
 {%- if field.IsPointer -%}
 	if s.{%s field.Name %} == nil {
-		encoder.AddReflected("{%s field.Name %}", nil)
+		encoder.AddReflected("{%s field.ExportedName %}", nil)
 	} else {
 {%- endif -%}
 encoder.Add{%s t %}("{%s field.ExportedName %}", {%- if field.IsPointer -%}*{%- endif -%}s.{%s field.Name %})

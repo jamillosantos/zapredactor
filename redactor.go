@@ -1,6 +1,8 @@
 package zapredactor
 
 import (
+	"reflect"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -50,8 +52,12 @@ func RedactValue(data interface{}, redactor redactors.Redactor) string {
 	return defaultRedactorManager.RedactValue(data, redactor)
 }
 
-// Redact constructs a field with the given key and value.
+// Redact constructs a field with the given key and value. A nil value is logged as null.
 func Redact(key string, val Redactable) zap.Field {
+	// A nil pointer would panic when its value-receiver Redact method is called.
+	if v := reflect.ValueOf(val); !v.IsValid() || (v.Kind() == reflect.Pointer && v.IsNil()) {
+		return zap.Reflect(key, nil)
+	}
 	return zap.Object(key, &redactableField{val})
 }
 

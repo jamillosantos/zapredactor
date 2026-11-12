@@ -19,7 +19,7 @@ func DefaultNameExtractor(s reflect.StructField) string {
 	if jsonT != "" {
 		jsonT = strings.Split(jsonT, ",")[0]
 	}
-	if jsonT != "" {
+	if jsonT != "" && jsonT != "-" {
 		return jsonT
 	}
 	return s.Name

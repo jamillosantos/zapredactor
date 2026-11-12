@@ -180,7 +180,7 @@ The generated file gives each struct a `Redact(zapcore.ObjectEncoder) error` met
 logger.Info("card added", zapredactor.Redact("card", &card))
 ```
 
-You can also write the `Redact` method by hand for types the generator cannot handle.
+A nil value is logged as `null`. You can also write the `Redact` method by hand for types the generator cannot handle.
 
 ### How fields are handled
 

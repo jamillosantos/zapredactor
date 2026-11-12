@@ -26,3 +26,8 @@ func TestUsesZapArray(t *testing.T) {
 		})
 	}
 }
+
+func TestRenderValueType_nilPointerUsesExportedName(t *testing.T) {
+	got := RenderValueType(domain.RedactedField{Name: "Email", ExportedName: "email", IsPointer: true}, "String")
+	assert.Contains(t, got, `encoder.AddReflected("email", nil)`)
+}

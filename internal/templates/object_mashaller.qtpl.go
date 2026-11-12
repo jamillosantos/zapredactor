@@ -149,7 +149,7 @@ func StreamRenderValueType(qw422016 *qt422016.Writer, field domain.RedactedField
 		qw422016.N().S(` == nil {
 		encoder.AddReflected("`)
 //line object_mashaller.qtpl:33
-		qw422016.E().S(field.Name)
+		qw422016.E().S(field.ExportedName)
 //line object_mashaller.qtpl:33
 		qw422016.N().S(`", nil)
 	} else {
