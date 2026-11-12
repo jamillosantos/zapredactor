@@ -1,3 +1,5 @@
-
 generate:
 	go generate ./...
+
+lint:
+	go tool -modfile=golangci-lint.mod golangci-lint run ./...

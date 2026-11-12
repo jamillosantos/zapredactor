@@ -6,7 +6,9 @@ package {%s info.Name %}
 
 import (
 	"github.com/jamillosantos/zapredactor"
-	{%- if info.IncludeZapArray -%}"github.com/jamillosantos/zapredactor/zaparray"{%- endif -%}
+	{%- if info.IncludeZapArray -%}
+	"github.com/jamillosantos/zapredactor/zaparray"
+	{%- endif -%}
 	"go.uber.org/zap/zapcore"
 )
 

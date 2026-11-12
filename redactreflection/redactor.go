@@ -101,7 +101,7 @@ func addField(encoder zapcore.ObjectEncoder, field string, value interface{}) {
 // Whenever a field is a struct, it is recursively walked.
 func walkFields(encoder zapcore.ObjectEncoder, obj interface{}, prefix string, fieldNameFormatter func(p reflect.StructField) string, f fieldVisitor) {
 	val := reflect.ValueOf(obj)
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		val = val.Elem()
 	}
 	switch val.Kind() {
