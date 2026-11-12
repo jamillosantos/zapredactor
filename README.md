@@ -42,8 +42,8 @@ There are two ways to redact a value. Both return a `zap.Field`, so they are use
 | Entry point                        | `zapredactor.Redact`                  | `redactreflection.Redact`                 |
 
 **Code generation is the more performant option.** The generated method writes each field straight to the zap
-encoder, while reflection inspects the value again on every log call. Logging a small struct was about three times
-faster with code generation, using roughly a third of the memory and allocations.
+encoder, while reflection inspects the value again on every log call. In the benchmark of this repository, logging a
+small struct is about three times faster with code generation, with less than half the memory and allocations.
 
 Use code generation for your own types, and whenever logging sits on a hot path. Keep reflection for types from other
 packages and for maps.
@@ -414,6 +414,8 @@ go run ./examples/card
 go test ./...   # run the tests
 make lint       # run golangci-lint
 make generate   # regenerate the template code and the examples
+
+go test ./examples/card -run '^$' -bench . -benchmem   # compare code generation and reflection
 ```
 
 ## License
