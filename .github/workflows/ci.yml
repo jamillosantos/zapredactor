@@ -20,6 +20,10 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+          # The linter is built from golangci-lint.mod, so its sum file is part of the cache key too.
+          cache-dependency-path: |
+            go.sum
+            golangci-lint.sum
       - run: make lint
 
   test:
