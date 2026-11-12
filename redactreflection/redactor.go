@@ -82,10 +82,18 @@ func addField(encoder zapcore.ObjectEncoder, field string, value interface{}) {
 	case time.Time:
 		encoder.AddTime(field, v)
 	case *time.Time:
+		if v == nil {
+			_ = encoder.AddReflected(field, nil)
+			return
+		}
 		encoder.AddTime(field, *v)
 	case time.Duration:
 		encoder.AddDuration(field, v)
 	case *time.Duration:
+		if v == nil {
+			_ = encoder.AddReflected(field, nil)
+			return
+		}
 		encoder.AddDuration(field, *v)
 	case error:
 		encoder.AddString(field, v.Error())

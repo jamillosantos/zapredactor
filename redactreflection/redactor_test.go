@@ -195,6 +195,20 @@ func Test_redactByReflection_Redact(t *testing.T) {
 		assert.Contains(t, logData.String(), `"data":{"Allowed":1609459200,"Redacted":"[redacted]"}`)
 	})
 
+	t.Run("should log allowed nil time pointers as null", func(t *testing.T) {
+		var logData bytes.Buffer
+		c := zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()), zapcore.AddSync(&logData), zapcore.DebugLevel)
+		logger := zap.New(c)
+
+		logger.Info("message", Redact("data", struct {
+			Time     *time.Time
+			Duration *time.Duration
+		}{}, WithAllowFields("Time", "Duration")))
+
+		_ = logger.Sync()
+		assert.Contains(t, logData.String(), `"data":{"Time":null,"Duration":null}`)
+	})
+
 	t.Run("should render all fields types", func(t *testing.T) {
 		var logData bytes.Buffer
 		c := zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()), zapcore.AddSync(&logData), zapcore.DebugLevel)
