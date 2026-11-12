@@ -66,7 +66,7 @@ type Demo struct {
 	Durationp                  *time.Duration  `redact:",allow"`
 	Byte                       []byte          `redact:",allow"`
 	RedactedString             string
-	RedactedStringWithCardData string `redact:",,pan"`
+	RedactedStringWithCardData string `redact:",,pan64"`
 	RedactedStrings            []string
 	RedactedStringp            *string
 	RedactedInt                int

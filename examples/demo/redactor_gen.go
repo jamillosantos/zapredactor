@@ -135,7 +135,7 @@ func (s Demo) Redact(encoder zapcore.ObjectEncoder) error {
 	}
 	encoder.AddBinary("Byte", s.Byte)
 	encoder.AddString("RedactedString", zapredactor.RedactValue(s.RedactedString, ""))
-	encoder.AddString("RedactedStringWithCardData", zapredactor.RedactValue(s.RedactedStringWithCardData, ""))
+	encoder.AddString("RedactedStringWithCardData", zapredactor.RedactValue(s.RedactedStringWithCardData, "pan64"))
 	encoder.AddString("RedactedStrings", zapredactor.RedactValue(s.RedactedStrings, ""))
 	encoder.AddString("RedactedStringp", zapredactor.RedactValue(s.RedactedStringp, ""))
 	encoder.AddString("RedactedInt", zapredactor.RedactValue(s.RedactedInt, ""))

@@ -49,7 +49,7 @@ var rootCmd = &cobra.Command{
 			p.Structs = append(p.Structs, s)
 
 			for _, f := range s.Fields {
-				if f.IsArray {
+				if templates.UsesZapArray(f) {
 					p.IncludeZapArray = true
 				}
 			}

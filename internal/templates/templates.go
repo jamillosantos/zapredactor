@@ -8,67 +8,82 @@ import (
 	"github.com/jamillosantos/zapredactor/internal/domain"
 )
 
-type fieldRendererFnc func(writer *quicktemplate.Writer, field domain.RedactedField)
-
 var (
-	renderFieldMap = map[string]fieldRendererFnc{
-		"builtin.string":       streamRenderValueType("String"),
-		"*builtin.string":      streamRenderValueType("String"),
-		"[]builtin.string":     streamRenderArrayType("StringArray"),
-		"builtin.int":          streamRenderValueType("Int"),
-		"[]builtin.int":        streamRenderArrayType("Ints"),
-		"*builtin.int":         streamRenderValueType("Int"),
-		"builtin.int8":         streamRenderValueType("Int8"),
-		"[]builtin.int8":       streamRenderArrayType("Int8s"),
-		"*builtin.int8":        streamRenderValueType("Int8"),
-		"builtin.int16":        streamRenderValueType("Int16"),
-		"[]builtin.int16":      streamRenderArrayType("Int16s"),
-		"*builtin.int16":       streamRenderValueType("Int16"),
-		"builtin.int32":        streamRenderValueType("Int32"),
-		"[]builtin.int32":      streamRenderArrayType("Int32s"),
-		"*builtin.int32":       streamRenderValueType("Int32"),
-		"builtin.int64":        streamRenderValueType("Int64"),
-		"[]builtin.int64":      streamRenderArrayType("Int64s"),
-		"*builtin.int64":       streamRenderValueType("Int64"),
-		"builtin.uint":         streamRenderValueType("Uint"),
-		"[]builtin.uint":       streamRenderArrayType("Uints"),
-		"*builtin.uint":        streamRenderValueType("Uint"),
-		"builtin.uint8":        streamRenderValueType("Uint8"),
-		"[]builtin.uint8":      streamRenderArrayType("Uint8s"),
-		"*builtin.uint8":       streamRenderValueType("Uint8"),
-		"builtin.uint16":       streamRenderValueType("Uint16"),
-		"[]builtin.uint16":     streamRenderArrayType("Uint16s"),
-		"*builtin.uint16":      streamRenderValueType("Uint16"),
-		"builtin.uint32":       streamRenderValueType("Uint32"),
-		"[]builtin.uint32":     streamRenderArrayType("Uint32s"),
-		"*builtin.uint32":      streamRenderValueType("Uint32"),
-		"builtin.uint64":       streamRenderValueType("Uint64"),
-		"[]builtin.uint64":     streamRenderArrayType("Uint64s"),
-		"*builtin.uint64":      streamRenderValueType("Uint64"),
-		"builtin.float32":      streamRenderValueType("Float32"),
-		"[]builtin.float32":    streamRenderArrayType("Float32s"),
-		"*builtin.float32":     streamRenderValueType("Float32"),
-		"builtin.float64":      streamRenderValueType("Float64"),
-		"[]builtin.float64":    streamRenderArrayType("Float64s"),
-		"*builtin.float64":     streamRenderValueType("Float64"),
-		"builtin.complex64":    streamRenderValueType("Complex64"),
-		"[]builtin.complex64":  streamRenderArrayType("Complex64s"),
-		"*builtin.complex64":   streamRenderValueType("Complex64"),
-		"builtin.complex128":   streamRenderValueType("Complex128"),
-		"[]builtin.complex128": streamRenderArrayType("Complex128s"),
-		"*builtin.complex128":  streamRenderValueType("Complex128"),
-		"builtin.bool":         streamRenderValueType("Bool"),
-		"[]builtin.bool":       streamRenderArrayType("Bools"),
-		"*builtin.bool":        streamRenderValueType("Bool"),
-		"time.Time":            streamRenderValueType("Time"),
-		"[]time.Time":          streamRenderArrayType("Times"),
-		"*time.Time":           streamRenderValueType("Time"),
-		"time.Duration":        streamRenderValueType("Duration"),
-		"[]time.Duration":      streamRenderArrayType("Durations"),
-		"*time.Duration":       streamRenderValueType("Duration"),
-		"[]builtin.byte":       streamRenderValueType("Binary"),
+	// valueTypes maps a field type to the zapcore.ObjectEncoder method (without the "Add" prefix) that logs it.
+	valueTypes = map[string]string{
+		"builtin.string":      "String",
+		"*builtin.string":     "String",
+		"builtin.int":         "Int",
+		"*builtin.int":        "Int",
+		"builtin.int8":        "Int8",
+		"*builtin.int8":       "Int8",
+		"builtin.int16":       "Int16",
+		"*builtin.int16":      "Int16",
+		"builtin.int32":       "Int32",
+		"*builtin.int32":      "Int32",
+		"builtin.int64":       "Int64",
+		"*builtin.int64":      "Int64",
+		"builtin.uint":        "Uint",
+		"*builtin.uint":       "Uint",
+		"builtin.uint8":       "Uint8",
+		"*builtin.uint8":      "Uint8",
+		"builtin.uint16":      "Uint16",
+		"*builtin.uint16":     "Uint16",
+		"builtin.uint32":      "Uint32",
+		"*builtin.uint32":     "Uint32",
+		"builtin.uint64":      "Uint64",
+		"*builtin.uint64":     "Uint64",
+		"builtin.float32":     "Float32",
+		"*builtin.float32":    "Float32",
+		"builtin.float64":     "Float64",
+		"*builtin.float64":    "Float64",
+		"builtin.complex64":   "Complex64",
+		"*builtin.complex64":  "Complex64",
+		"builtin.complex128":  "Complex128",
+		"*builtin.complex128": "Complex128",
+		"builtin.bool":        "Bool",
+		"*builtin.bool":       "Bool",
+		"time.Time":           "Time",
+		"*time.Time":          "Time",
+		"time.Duration":       "Duration",
+		"*time.Duration":      "Duration",
+		"[]builtin.byte":      "Binary",
+	}
+
+	// arrayTypes maps a field type to the zaparray type that logs it.
+	arrayTypes = map[string]string{
+		"[]builtin.string":     "StringArray",
+		"[]builtin.int":        "Ints",
+		"[]builtin.int8":       "Int8s",
+		"[]builtin.int16":      "Int16s",
+		"[]builtin.int32":      "Int32s",
+		"[]builtin.int64":      "Int64s",
+		"[]builtin.uint":       "Uints",
+		"[]builtin.uint8":      "Uint8s",
+		"[]builtin.uint16":     "Uint16s",
+		"[]builtin.uint32":     "Uint32s",
+		"[]builtin.uint64":     "Uint64s",
+		"[]builtin.float32":    "Float32s",
+		"[]builtin.float64":    "Float64s",
+		"[]builtin.complex64":  "Complex64s",
+		"[]builtin.complex128": "Complex128s",
+		"[]builtin.bool":       "Bools",
+		"[]time.Time":          "Times",
+		"[]time.Duration":      "Durations",
 	}
 )
+
+// isAllowedValue reports whether the field is logged with its real value, which is the only case rendered through
+// valueTypes and arrayTypes.
+func isAllowedValue(field domain.RedactedField) bool {
+	return !field.Skip && !field.IsStruct && !field.IsRedacted
+}
+
+// UsesZapArray reports whether the code rendered for the field references the zaparray package.
+func UsesZapArray(field domain.RedactedField) bool {
+	_, ok := arrayTypes[field.Type]
+	return ok && isAllowedValue(field)
+}
 
 func StreamRenderField(writer *quicktemplate.Writer, field domain.RedactedField) {
 	switch {
@@ -81,21 +96,13 @@ func StreamRenderField(writer *quicktemplate.Writer, field domain.RedactedField)
 		StreamRenderValueRedacted(writer, field, field.Redactor)
 		return
 	}
-	fr, ok := renderFieldMap[field.Type]
-	if !ok {
-		panic("unsupported field type: " + field.Type)
-	}
-	fr(writer, field)
-}
-
-func streamRenderValueType(t string) fieldRendererFnc {
-	return func(writer *quicktemplate.Writer, field domain.RedactedField) {
-		StreamRenderValueType(writer, field, t)
-	}
-}
-
-func streamRenderArrayType(t string) fieldRendererFnc {
-	return func(writer *quicktemplate.Writer, field domain.RedactedField) {
+	if t, ok := arrayTypes[field.Type]; ok {
 		StreamRenderArray(writer, field, t)
+		return
 	}
+	if t, ok := valueTypes[field.Type]; ok {
+		StreamRenderValueType(writer, field, t)
+		return
+	}
+	panic("unsupported field type: " + field.Type)
 }

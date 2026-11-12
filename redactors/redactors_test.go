@@ -36,6 +36,10 @@ func TestPAN64(t *testing.T) {
 			nil,
 			"",
 		},
+		{
+			(*string)(nil),
+			"",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("should format %v to %s", tt.data, tt.want), func(t *testing.T) {
@@ -70,6 +74,10 @@ func TestBIN(t *testing.T) {
 			nil,
 			"",
 		},
+		{
+			(*string)(nil),
+			"",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("should format %v to %s", tt.data, tt.want), func(t *testing.T) {
@@ -85,6 +93,7 @@ func TestStar(t *testing.T) {
 		want string
 	}{
 		{nil, ""},
+		{(*string)(nil), ""},
 		{12345, notCompatible},
 		{"", ""},
 		{"12345", "*****"},
@@ -121,6 +130,7 @@ func TestLen(t *testing.T) {
 		{make([]interface{}, 3), 3},
 		{"123", 3},
 		{&cardNumber, 15},
+		{(*string)(nil), 0},
 		{make([]struct{}, 3), 3},
 	}
 	for _, tt := range tests {

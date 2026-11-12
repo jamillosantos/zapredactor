@@ -42,6 +42,9 @@ func PAN64Redactor(data interface{}) string {
 	case string:
 		pan = p
 	case *string:
+		if p == nil {
+			return ""
+		}
 		pan = *p
 	default:
 		return notCompatible
@@ -62,6 +65,9 @@ func BINRedactor(data interface{}) string {
 	case string:
 		pan = p
 	case *string:
+		if p == nil {
+			return ""
+		}
 		pan = *p
 	default:
 		return notCompatible
@@ -82,6 +88,9 @@ func StarRedactor(data interface{}) string {
 	case string:
 		l = len(p)
 	case *string:
+		if p == nil {
+			return ""
+		}
 		l = len(*p)
 	default:
 		return notCompatible
@@ -129,7 +138,9 @@ func LenRedactor(data interface{}) string {
 	case string:
 		l = len(p)
 	case *string:
-		l = len(*p)
+		if p != nil {
+			l = len(*p)
+		}
 	default:
 		val := reflect.ValueOf(p)
 		if val.Kind() != reflect.Slice {

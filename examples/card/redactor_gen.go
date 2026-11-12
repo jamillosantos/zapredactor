@@ -13,9 +13,9 @@ func (s Expiry) Redact(encoder zapcore.ObjectEncoder) error {
 }
 
 func (s CreditCard) Redact(encoder zapcore.ObjectEncoder) error {
-	encoder.AddString("pan", zapredactor.RedactValue(s.PAN, ""))
+	encoder.AddString("pan", zapredactor.RedactValue(s.PAN, "pan64"))
 	encoder.AddString("card_holder", zapredactor.RedactValue(s.CardHolder, ""))
-	encoder.AddString("CVV", zapredactor.RedactValue(s.CVV, ""))
+	encoder.AddString("CVV", zapredactor.RedactValue(s.CVV, "*"))
 	encoder.AddObject("Expiry", zapredactor.RedactObject(&s.Expiry))
 	encoder.AddString("First4", s.First4)
 	encoder.AddString("Last4", s.Last4)
