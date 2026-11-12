@@ -77,15 +77,19 @@ func getIsRedacted(tag myasthurts.Tag) bool {
 	return true
 }
 
+// getPackageName returns the field type with every pointer, slice and channel level in it, so that a type the
+// templates do not know, such as "[]*builtin.string", is reported as unsupported instead of rendered as "[]string".
 func getPackageName(refType myasthurts.RefType) string {
-	prefix := ""
-	if getIsArray(refType) {
-		prefix = "[]"
+	switch t := refType.(type) {
+	case *myasthurts.ArrayRefType:
+		// shortcut: the parser drops the length, so [4]T is seen as []T; needs the parser to keep it.
+		return "[]" + getPackageName(t.RefType)
+	case *myasthurts.StarRefType:
+		return "*" + getPackageName(t.RefType)
+	case *myasthurts.ChanRefType:
+		return "chan " + getPackageName(t.RefType)
 	}
-	if getIsPointer(refType) {
-		prefix += "*"
-	}
-	return prefix + refType.Pkg().Name + "." + refType.Name()
+	return refType.Pkg().Name + "." + refType.Name()
 }
 
 func getIsArray(refType myasthurts.RefType) bool {

@@ -39,3 +39,27 @@ func TestToRedactedStruct(t *testing.T) {
 		"Slice":    {exportedName: "Slice", isRedacted: true, redactor: "len"},
 	}, fields)
 }
+
+func TestToRedactedStruct_types(t *testing.T) {
+	env, err := myasthurts.NewEnvironment()
+	require.NoError(t, err)
+	pkg, err := env.Parse("./testdata/types")
+	require.NoError(t, err)
+	require.Len(t, pkg.Structs, 1)
+
+	types := make(map[string]string)
+	for _, f := range ToRedactedStruct(pkg.Structs[0]).Fields {
+		types[f.Name] = f.Type
+	}
+	assert.Equal(t, map[string]string{
+		"Value":            "builtin.string",
+		"Pointer":          "*builtin.string",
+		"Slice":            "[]builtin.string",
+		"Time":             "*time.Time",
+		"SliceOfPointers":  "[]*builtin.string",
+		"PointerToSlice":   "*[]builtin.string",
+		"SliceOfSlices":    "[][]builtin.string",
+		"PointerToPointer": "**builtin.string",
+		"Channel":          "chan builtin.string",
+	}, types)
+}
