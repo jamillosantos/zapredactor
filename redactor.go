@@ -100,11 +100,17 @@ func Redact(key string, val Redactable) zap.Field {
 	if v := reflect.ValueOf(val); !v.IsValid() || (v.Kind() == reflect.Pointer && v.IsNil()) {
 		return zap.Reflect(key, nil)
 	}
-	return zap.Object(key, &redactableField{val})
+	return zap.Object(key, RedactObject(val))
 }
 
 // RedactObject constructs zapcore.ObjectMashaler from a Redactable.
 func RedactObject(val Redactable) zapcore.ObjectMarshaler {
+	// A pointer to a generated type brings its own marshaler, which saves the proxy and the copy of the struct.
+	if m, ok := val.(interface {
+		RedactObject() zapcore.ObjectMarshaler
+	}); ok {
+		return m.RedactObject()
+	}
 	return &redactableField{val}
 }
 

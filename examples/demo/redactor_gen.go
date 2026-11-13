@@ -7,7 +7,11 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func (s Demo) Redact(encoder zapcore.ObjectEncoder) error {
+// redactedDemo logs a Demo redacted. Its method has a pointer receiver, so logging through a pointer does
+// not copy the struct.
+type redactedDemo Demo
+
+func (s *redactedDemo) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	encoder.AddString("String", s.String)
 	zap.Strings("Strings", s.Strings).AddTo(encoder)
 	if s.Stringp == nil {
@@ -195,6 +199,16 @@ func (s Demo) Redact(encoder zapcore.ObjectEncoder) error {
 	zapredactor.AddRedacted(encoder, "RedactedDurationp", s.RedactedDurationp, "")
 	zapredactor.AddRedacted(encoder, "RedactedByte", s.RedactedByte, "")
 	return nil
+}
+
+// RedactObject returns the zapcore.ObjectMarshaler that logs the struct redacted without copying it. It is what
+// zapredactor.Redact uses when it receives a pointer.
+func (s *Demo) RedactObject() zapcore.ObjectMarshaler {
+	return (*redactedDemo)(s)
+}
+
+func (s Demo) Redact(encoder zapcore.ObjectEncoder) error {
+	return (*redactedDemo)(&s).MarshalLogObject(encoder)
 }
 
 // MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.

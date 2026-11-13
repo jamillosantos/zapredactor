@@ -6,10 +6,24 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func (s Expiry) Redact(encoder zapcore.ObjectEncoder) error {
+// redactedExpiry logs a Expiry redacted. Its method has a pointer receiver, so logging through a pointer does
+// not copy the struct.
+type redactedExpiry Expiry
+
+func (s *redactedExpiry) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	zapredactor.AddRedacted(encoder, "Month", s.Month, "")
 	encoder.AddInt("Year", s.Year)
 	return nil
+}
+
+// RedactObject returns the zapcore.ObjectMarshaler that logs the struct redacted without copying it. It is what
+// zapredactor.Redact uses when it receives a pointer.
+func (s *Expiry) RedactObject() zapcore.ObjectMarshaler {
+	return (*redactedExpiry)(s)
+}
+
+func (s Expiry) Redact(encoder zapcore.ObjectEncoder) error {
+	return (*redactedExpiry)(&s).MarshalLogObject(encoder)
 }
 
 // MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
@@ -17,7 +31,11 @@ func (s Expiry) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	return s.Redact(encoder)
 }
 
-func (s CreditCard) Redact(encoder zapcore.ObjectEncoder) error {
+// redactedCreditCard logs a CreditCard redacted. Its method has a pointer receiver, so logging through a pointer does
+// not copy the struct.
+type redactedCreditCard CreditCard
+
+func (s *redactedCreditCard) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	zapredactor.AddRedacted(encoder, "pan", s.PAN, "pan64")
 	zapredactor.AddRedacted(encoder, "card_holder", s.CardHolder, "")
 	zapredactor.AddRedacted(encoder, "CVV", s.CVV, "*")
@@ -27,15 +45,39 @@ func (s CreditCard) Redact(encoder zapcore.ObjectEncoder) error {
 	return nil
 }
 
+// RedactObject returns the zapcore.ObjectMarshaler that logs the struct redacted without copying it. It is what
+// zapredactor.Redact uses when it receives a pointer.
+func (s *CreditCard) RedactObject() zapcore.ObjectMarshaler {
+	return (*redactedCreditCard)(s)
+}
+
+func (s CreditCard) Redact(encoder zapcore.ObjectEncoder) error {
+	return (*redactedCreditCard)(&s).MarshalLogObject(encoder)
+}
+
 // MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
 func (s CreditCard) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	return s.Redact(encoder)
 }
 
-func (s Address) Redact(encoder zapcore.ObjectEncoder) error {
+// redactedAddress logs a Address redacted. Its method has a pointer receiver, so logging through a pointer does
+// not copy the struct.
+type redactedAddress Address
+
+func (s *redactedAddress) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	zapredactor.AddRedacted(encoder, "Street", s.Street, "")
 	zapredactor.AddRedacted(encoder, "City", s.City, "")
 	return nil
+}
+
+// RedactObject returns the zapcore.ObjectMarshaler that logs the struct redacted without copying it. It is what
+// zapredactor.Redact uses when it receives a pointer.
+func (s *Address) RedactObject() zapcore.ObjectMarshaler {
+	return (*redactedAddress)(s)
+}
+
+func (s Address) Redact(encoder zapcore.ObjectEncoder) error {
+	return (*redactedAddress)(&s).MarshalLogObject(encoder)
 }
 
 // MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
@@ -43,7 +85,11 @@ func (s Address) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	return s.Redact(encoder)
 }
 
-func (s Customer) Redact(encoder zapcore.ObjectEncoder) error {
+// redactedCustomer logs a Customer redacted. Its method has a pointer receiver, so logging through a pointer does
+// not copy the struct.
+type redactedCustomer Customer
+
+func (s *redactedCustomer) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	zapredactor.AddRedacted(encoder, "Name", s.Name, "")
 	if s.Card == nil {
 		encoder.AddReflected("Card", nil)
@@ -52,6 +98,16 @@ func (s Customer) Redact(encoder zapcore.ObjectEncoder) error {
 	}
 	encoder.AddObject("Address", zapredactor.RedactObject(&s.Address))
 	return nil
+}
+
+// RedactObject returns the zapcore.ObjectMarshaler that logs the struct redacted without copying it. It is what
+// zapredactor.Redact uses when it receives a pointer.
+func (s *Customer) RedactObject() zapcore.ObjectMarshaler {
+	return (*redactedCustomer)(s)
+}
+
+func (s Customer) Redact(encoder zapcore.ObjectEncoder) error {
+	return (*redactedCustomer)(&s).MarshalLogObject(encoder)
 }
 
 // MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.

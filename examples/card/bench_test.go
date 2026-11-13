@@ -67,9 +67,9 @@ func benchVariants() []benchVariant {
 	reflection := redactreflection.Redactor(benchReflectionOptions...)
 	return []benchVariant{
 		{"handwritten", 1, func() zap.Field { return zap.Object("card", &handwritten) }},
-		{"codegen_zap.Object", 3, func() zap.Field { return zap.Object("card", &card) }},
-		{"codegen_Redact", 4, func() zap.Field { return zapredactor.Redact("card", &card) }},
-		{"codegen_Redact_by_value", 5, func() zap.Field { return zapredactor.Redact("card", card) }},
+		{"codegen_zap.Object", 2, func() zap.Field { return zap.Object("card", &card) }},
+		{"codegen_Redact", 1, func() zap.Field { return zapredactor.Redact("card", &card) }},
+		{"codegen_Redact_by_value", 4, func() zap.Field { return zapredactor.Redact("card", card) }},
 		{"reflection_Redactor", 22, func() zap.Field { return reflection("card", &card) }},
 		{"reflection_Redact", 24, func() zap.Field {
 			return redactreflection.Redact("card", &card, benchReflectionOptions...)
