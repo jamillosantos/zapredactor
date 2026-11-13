@@ -147,3 +147,38 @@ func TestLen(t *testing.T) {
 		assert.Equal(t, notCompatible, got)
 	})
 }
+
+// AppendString is the fast path of the redactor functions, so it must give the same text as they do.
+func TestAppendString(t *testing.T) {
+	fncs := map[Redactor]func(interface{}) string{
+		Default:  DefaultRedactor,
+		PAN64:    PAN64Redactor,
+		BIN:      BINRedactor,
+		Star:     StarRedactor,
+		Asterisk: StarRedactor,
+		Len:      LenRedactor,
+	}
+	for redactor, fnc := range fncs {
+		for _, s := range []string{"", "short", "1234567", cardNumber, strings.Repeat("a", 100)} {
+			got, ok := AppendString([]byte("kept:"), s, redactor)
+			assert.True(t, ok)
+			assert.Equal(t, "kept:"+fnc(s), string(got), "redactor %q with %q", redactor, s)
+		}
+	}
+
+	t.Run("not a built-in redactor", func(t *testing.T) {
+		got, ok := AppendString(nil, cardNumber, "custom")
+		assert.False(t, ok)
+		assert.Empty(t, got)
+	})
+
+	t.Run("replaced DefaultRedactor", func(t *testing.T) {
+		original := DefaultRedactor
+		t.Cleanup(func() { DefaultRedactor = original })
+		DefaultRedactor = func(interface{}) string { return "[replaced]" }
+
+		got, ok := AppendString(nil, "short", PAN64)
+		assert.False(t, ok)
+		assert.Empty(t, got)
+	})
+}

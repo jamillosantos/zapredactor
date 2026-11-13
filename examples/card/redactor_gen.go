@@ -7,7 +7,7 @@ import (
 )
 
 func (s Expiry) Redact(encoder zapcore.ObjectEncoder) error {
-	encoder.AddString("Month", zapredactor.RedactValue(s.Month, ""))
+	zapredactor.AddRedacted(encoder, "Month", s.Month, "")
 	encoder.AddInt("Year", s.Year)
 	return nil
 }
@@ -18,9 +18,9 @@ func (s Expiry) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 }
 
 func (s CreditCard) Redact(encoder zapcore.ObjectEncoder) error {
-	encoder.AddString("pan", zapredactor.RedactValue(s.PAN, "pan64"))
-	encoder.AddString("card_holder", zapredactor.RedactValue(s.CardHolder, ""))
-	encoder.AddString("CVV", zapredactor.RedactValue(s.CVV, "*"))
+	zapredactor.AddRedacted(encoder, "pan", s.PAN, "pan64")
+	zapredactor.AddRedacted(encoder, "card_holder", s.CardHolder, "")
+	zapredactor.AddRedacted(encoder, "CVV", s.CVV, "*")
 	encoder.AddObject("Expiry", zapredactor.RedactObject(&s.Expiry))
 	encoder.AddString("First4", s.First4)
 	encoder.AddString("Last4", s.Last4)
@@ -33,8 +33,8 @@ func (s CreditCard) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 }
 
 func (s Address) Redact(encoder zapcore.ObjectEncoder) error {
-	encoder.AddString("Street", zapredactor.RedactValue(s.Street, ""))
-	encoder.AddString("City", zapredactor.RedactValue(s.City, ""))
+	zapredactor.AddRedacted(encoder, "Street", s.Street, "")
+	zapredactor.AddRedacted(encoder, "City", s.City, "")
 	return nil
 }
 
@@ -44,7 +44,7 @@ func (s Address) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 }
 
 func (s Customer) Redact(encoder zapcore.ObjectEncoder) error {
-	encoder.AddString("Name", zapredactor.RedactValue(s.Name, ""))
+	zapredactor.AddRedacted(encoder, "Name", s.Name, "")
 	if s.Card == nil {
 		encoder.AddReflected("Card", nil)
 	} else {

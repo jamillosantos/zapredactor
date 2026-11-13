@@ -49,7 +49,7 @@ zap.{%s t %}("{%j= field.ExportedName %}", s.{%s field.Name %}).AddTo(encoder)
 {%- endfunc %}
 
 {% func RenderValueRedacted(field domain.RedactedField, redactor string) -%}
-encoder.AddString("{%j= field.ExportedName %}", zapredactor.RedactValue(s.{%s field.Name %}, "{%j= redactor %}"))
+zapredactor.AddRedacted(encoder, "{%j= field.ExportedName %}", s.{%s field.Name %}, "{%j= redactor %}")
 {%- endfunc %}
 
 {% func RenderObjectRedacted(field domain.RedactedField) -%}
