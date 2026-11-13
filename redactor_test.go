@@ -30,6 +30,27 @@ func TestRedact_nil(t *testing.T) {
 	}
 }
 
+// testFastRedactable has the RedactObject method the generator gives to the pointers of the structs.
+type testFastRedactable struct{ testRedactable }
+
+func (*testFastRedactable) RedactObject() zapcore.ObjectMarshaler {
+	return zapcore.ObjectMarshalerFunc(func(encoder zapcore.ObjectEncoder) error {
+		encoder.AddString("field", "fast")
+		return nil
+	})
+}
+
+func TestRedact_usesRedactObjectOfPointers(t *testing.T) {
+	for want, val := range map[string]Redactable{
+		"fast":  &testFastRedactable{},
+		"value": testFastRedactable{}, // The method is on the pointer, so a value goes through Redact.
+	} {
+		enc := zapcore.NewMapObjectEncoder()
+		Redact("key", val).AddTo(enc)
+		assert.Equal(t, map[string]interface{}{"field": want}, enc.Fields["key"])
+	}
+}
+
 func TestRedactValue(t *testing.T) {
 	RegisterRedactor("test_custom", func(interface{}) string { return "[custom]" })
 

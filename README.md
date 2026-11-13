@@ -43,7 +43,8 @@ There are two ways to redact a value. Both return a `zap.Field`, so they are use
 
 **Code generation is the more performant option.** The generated method writes each field straight to the zap
 encoder, while reflection inspects the value again on every log call. In the benchmark of this repository, logging a
-small struct is about three times faster with code generation, with less than half the memory and allocations.
+small struct through a pointer is more than three times faster with code generation, and it allocates nothing beyond
+what zap itself allocates.
 
 Use code generation for your own types, and whenever logging sits on a hot path. Keep reflection for types from other
 packages and for maps.
@@ -173,11 +174,12 @@ package domain
 
 ### 3. Log it
 
-The generated file gives each struct two methods:
+The generated file gives each struct three methods:
 
 - `Redact(zapcore.ObjectEncoder) error`, which satisfies the `zapredactor.Redactable` interface.
 - `MarshalLogObject(zapcore.ObjectEncoder) error`, which calls `Redact` and satisfies zap's own
   `zapcore.ObjectMarshaler` interface.
+- `RedactObject() zapcore.ObjectMarshaler`, on the pointer, which logs the struct without copying it.
 
 So the value, or a pointer to it, can be logged with `zapredactor.Redact` or with `zap.Object`:
 
@@ -185,6 +187,10 @@ So the value, or a pointer to it, can be logged with `zapredactor.Redact` or wit
 logger.Info("card added", zapredactor.Redact("card", &card))
 logger.Info("card added", zap.Object("card", card))
 ```
+
+**Pass a pointer to `zapredactor.Redact` when logging sits on a hot path.** It uses `RedactObject`, so nothing is
+allocated beyond what zap allocates for any field. The other forms work the same but copy the struct to the heap when
+it has nested structs. `zap.Object("card", card.RedactObject())` is the same fast path without the helper.
 
 `zapredactor.Redact` logs a nil value as `null`. `zap.Object` panics on a nil pointer, so give it a value or a pointer
 you know is set.
