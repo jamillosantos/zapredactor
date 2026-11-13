@@ -52,7 +52,7 @@ func PAN64Redactor(data interface{}) string {
 	if len(pan) < 6+4+2 {
 		return DefaultRedactor(data)
 	}
-	return pan[:6] + strings.Repeat("*", len(pan)-6-4) + pan[len(pan)-4:]
+	return pan[:6] + stars(len(pan)-6-4) + pan[len(pan)-4:]
 }
 
 // BINRedactor is a redactor for PANs. It outputs the first 6 digits. If the PAN is less than 6 digits the DefaultRedactor is used.
@@ -95,7 +95,16 @@ func StarRedactor(data interface{}) string {
 	default:
 		return notCompatible
 	}
-	return strings.Repeat("*", l)
+	return stars(l)
+}
+
+// stars returns n asterisks. It only allocates when n is above the length of the constant.
+func stars(n int) string {
+	const s = "****************************************************************"
+	if n <= len(s) {
+		return s[:n]
+	}
+	return strings.Repeat("*", n)
 }
 
 // LenRedactor is a redactor for arrays, string and *string. It will output the number of elements formatted as "[len:X]". If the

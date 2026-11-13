@@ -25,7 +25,8 @@ type redactByReflection struct {
 
 type fieldVisitor func(encoder zapcore.ObjectEncoder, fieldPath, fieldName string, value interface{})
 
-func (r redactByReflection) Redact(encoder zapcore.ObjectEncoder) error {
+// MarshalLogObject implements zapcore.ObjectMarshaler, so zap needs no proxy to log the value.
+func (r redactByReflection) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	walkFields(encoder, r.val, "", r.fieldNameExtractor, func(encoder zapcore.ObjectEncoder, fieldPath, fieldName string, value interface{}) {
 		info, _ := r.info[fieldPath]
 		if info.hidden {
