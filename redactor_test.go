@@ -1,6 +1,7 @@
 package zapredactor
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -47,4 +48,36 @@ func TestRedactorManager_zeroValue(t *testing.T) {
 	assert.Equal(t, "[custom]", rm.RedactValue("secret", "custom"))
 	assert.Equal(t, redactors.DefaultRedactedString, rm.RedactValue("secret", "unknown"))
 	assert.Equal(t, redactors.DefaultRedactedString, RedactValue("secret", "custom"), "a manager must not register on the default one")
+}
+
+func TestAddRedacted(t *testing.T) {
+	pan := "1234567890124321"
+	redacted := func(add func(encoder zapcore.ObjectEncoder)) interface{} {
+		encoder := zapcore.NewMapObjectEncoder()
+		add(encoder)
+		return encoder.Fields["key"]
+	}
+
+	assert.Equal(t, "123456******4321", redacted(func(e zapcore.ObjectEncoder) { AddRedacted(e, "key", pan, redactors.PAN64) }))
+	assert.Equal(t, "123456******4321", redacted(func(e zapcore.ObjectEncoder) { AddRedacted(e, "key", &pan, redactors.PAN64) }))
+	assert.Equal(t, redactors.DefaultRedactedString, redacted(func(e zapcore.ObjectEncoder) { AddRedacted(e, "key", 42, redactors.Default) }))
+	assert.Equal(t, redactors.DefaultRedactedString, redacted(func(e zapcore.ObjectEncoder) { AddRedacted(e, "key", pan, "unknown") }))
+
+	t.Run("a registered redactor replaces the built-in one", func(t *testing.T) {
+		t.Cleanup(func() {
+			defaultRedactorManager.redactors[redactors.Len] = redactors.LenRedactor
+			delete(registeredRedactors, redactors.Len)
+		})
+		RegisterRedactor(redactors.Len, func(interface{}) string { return "[custom]" })
+
+		assert.Equal(t, "[custom]", redacted(func(e zapcore.ObjectEncoder) { AddRedacted(e, "key", pan, redactors.Len) }))
+	})
+
+	t.Run("a replaced DefaultRedactor still receives the value", func(t *testing.T) {
+		original := redactors.DefaultRedactor
+		t.Cleanup(func() { redactors.DefaultRedactor = original })
+		redactors.DefaultRedactor = func(data interface{}) string { return fmt.Sprint("seen:", data) }
+
+		assert.Equal(t, "seen:42", redacted(func(e zapcore.ObjectEncoder) { AddRedacted(e, "key", 42, redactors.Default) }))
+	})
 }

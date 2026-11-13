@@ -31,6 +31,9 @@ var (
 	}
 )
 
+// builtinDefaultRedactor identifies the DefaultRedactor of this package, to tell when it was replaced.
+var builtinDefaultRedactor = reflect.ValueOf(DefaultRedactor).Pointer()
+
 // PAN64Redactor is a redactor for PANs it ouputs the first 6 and the last 4. If the PAN is less than 12 digits the
 // DefaultRedactor is used.
 func PAN64Redactor(data interface{}) string {
@@ -105,6 +108,37 @@ func stars(n int) string {
 		return s[:n]
 	}
 	return strings.Repeat("*", n)
+}
+
+// AppendString appends s, redacted by one of the built-in redactors, to dst. The text is the same the redactor
+// function returns, and nothing is allocated. It appends nothing and reports false when it cannot do that: the
+// redactor is not a built-in one, or DefaultRedactor was replaced.
+func AppendString(dst []byte, s string, redactor Redactor) ([]byte, bool) {
+	if reflect.ValueOf(DefaultRedactor).Pointer() != builtinDefaultRedactor {
+		return dst, false
+	}
+	switch redactor {
+	case Default:
+	case PAN64:
+		if len(s) >= 6+4+2 {
+			dst = append(dst, s[:6]...)
+			dst = append(dst, stars(len(s)-6-4)...)
+			return append(dst, s[len(s)-4:]...), true
+		}
+	case BIN:
+		if len(s) > 6 {
+			return append(dst, s[:6]...), true
+		}
+	case Star, Asterisk:
+		return append(dst, stars(len(s))...), true
+	case Len:
+		dst = append(dst, "[len:"...)
+		dst = strconv.AppendInt(dst, int64(len(s)), 10)
+		return append(dst, ']'), true
+	default:
+		return dst, false
+	}
+	return append(dst, DefaultRedactedString...), true
 }
 
 // LenRedactor is a redactor for arrays, string and *string. It will output the number of elements formatted as "[len:X]". If the

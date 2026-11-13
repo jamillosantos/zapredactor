@@ -36,7 +36,7 @@ func (r redactByReflection) MarshalLogObject(encoder zapcore.ObjectEncoder) erro
 			addField(encoder, fieldName, value)
 			return
 		}
-		encoder.AddString(fieldName, zapredactor.RedactValue(value, info.redactor))
+		zapredactor.AddRedacted(encoder, fieldName, value, info.redactor)
 	})
 	return nil
 }

@@ -273,11 +273,11 @@ func RenderArray(field domain.RedactedField, t string) string {
 //line object_mashaller.qtpl:51
 func StreamRenderValueRedacted(qw422016 *qt422016.Writer, field domain.RedactedField, redactor string) {
 //line object_mashaller.qtpl:51
-	qw422016.N().S(`encoder.AddString("`)
+	qw422016.N().S(`zapredactor.AddRedacted(encoder, "`)
 //line object_mashaller.qtpl:52
 	qw422016.N().J(field.ExportedName)
 //line object_mashaller.qtpl:52
-	qw422016.N().S(`", zapredactor.RedactValue(s.`)
+	qw422016.N().S(`", s.`)
 //line object_mashaller.qtpl:52
 	qw422016.E().S(field.Name)
 //line object_mashaller.qtpl:52
@@ -285,7 +285,7 @@ func StreamRenderValueRedacted(qw422016 *qt422016.Writer, field domain.RedactedF
 //line object_mashaller.qtpl:52
 	qw422016.N().J(redactor)
 //line object_mashaller.qtpl:52
-	qw422016.N().S(`"))
+	qw422016.N().S(`")
 `)
 //line object_mashaller.qtpl:53
 }
