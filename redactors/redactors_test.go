@@ -2,6 +2,7 @@ package redactors
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -98,6 +99,7 @@ func TestStar(t *testing.T) {
 		{"", ""},
 		{"12345", "*****"},
 		{&cardNumber, "***************"},
+		{strings.Repeat("a", 100), strings.Repeat("*", 100)}, // Longer than the constant the stars are cut from.
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%v to %v", tt.data, tt.want), func(t *testing.T) {
