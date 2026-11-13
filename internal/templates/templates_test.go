@@ -34,5 +34,5 @@ func TestRenderValueType_nilPointerUsesExportedName(t *testing.T) {
 
 func TestRenderValueRedacted_doesNotHTMLEscapeTheKey(t *testing.T) {
 	got := RenderValueRedacted(domain.RedactedField{Name: "QA", ExportedName: "q&a"}, "")
-	assert.Contains(t, got, `encoder.AddString("q&a", `)
+	assert.Contains(t, got, `"q&a"`)
 }

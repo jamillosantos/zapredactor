@@ -18,11 +18,25 @@ import (
 {% endfunc %}
 
 {% func RenderStruct(s domain.RedactedStruct) -%}
-func (s {%s s.Name %}) Redact(encoder zapcore.ObjectEncoder) error {
+// redacted{%s s.Name %} logs a {%s s.Name %} redacted. Its method has a pointer receiver, so logging through a pointer does
+// not copy the struct.
+type redacted{%s s.Name %} {%s s.Name %}
+
+func (s *redacted{%s s.Name %}) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 {%- for _, field := range s.Fields -%}
 	{%= RenderField(field) -%}
 {%- endfor -%}
 	return nil
+}
+
+// RedactObject returns the zapcore.ObjectMarshaler that logs the struct redacted without copying it. It is what
+// zapredactor.Redact uses when it receives a pointer.
+func (s *{%s s.Name %}) RedactObject() zapcore.ObjectMarshaler {
+	return (*redacted{%s s.Name %})(s)
+}
+
+func (s {%s s.Name %}) Redact(encoder zapcore.ObjectEncoder) error {
+	return (*redacted{%s s.Name %})(&s).MarshalLogObject(encoder)
 }
 
 // MarshalLogObject implements zapcore.ObjectMarshaler, so zap.Object and zap.Any redact the value too.
@@ -49,7 +63,7 @@ zap.{%s t %}("{%j= field.ExportedName %}", s.{%s field.Name %}).AddTo(encoder)
 {%- endfunc %}
 
 {% func RenderValueRedacted(field domain.RedactedField, redactor string) -%}
-encoder.AddString("{%j= field.ExportedName %}", zapredactor.RedactValue(s.{%s field.Name %}, "{%j= redactor %}"))
+zapredactor.AddRedacted(encoder, "{%j= field.ExportedName %}", s.{%s field.Name %}, "{%j= redactor %}")
 {%- endfunc %}
 
 {% func RenderObjectRedacted(field domain.RedactedField) -%}
