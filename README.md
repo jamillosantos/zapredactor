@@ -2,7 +2,7 @@
 
 Log structs and maps with [zap](https://github.com/uber-go/zap) without leaking sensitive data.
 
-Every field is redacted by default. A value only reaches the log when you explicitly allow it.
+Fields are hidden or redacted by default. A value only reaches the log when you explicitly allow it.
 
 ```go
 logger.Info("card added", zapredactor.Redact("card", &card))
@@ -66,7 +66,7 @@ import (
 )
 
 type Expiry struct {
-	Month int
+	Month int `redact:""`
 	Year  int `redact:",allow"`
 }
 
@@ -74,7 +74,7 @@ type CreditCard struct {
 	PAN            string `json:"pan" redact:",,pan64"` // first 6 and last 4 digits
 	CardHolder     string `redact:"card_holder"`        // redacted, logged as "card_holder"
 	CVV            string `redact:",,*"`                // one "*" per character
-	Expiry         Expiry                               // nested struct, follows its own tags
+	Expiry         Expiry `redact:""`                   // nested struct, follows its own tags
 	Last4          string `redact:",allow"`             // logged as is
 	InternalStatus string `redact:"-"`                  // never logged
 }
@@ -107,28 +107,31 @@ Output:
 #### The `redact` tag
 
 ```
-redact:"<name>,<allow>,<redactor>"
+redact:"<name>,<allow>,<redactor>,<omitempty>"
 ```
 
-All three parts are optional.
+All four parts are optional.
 
 | Part       | Meaning                                                                                                              |
 |------------|----------------------------------------------------------------------------------------------------------------------|
 | `name`     | Key used in the log. Defaults to the name in the `json` tag, then to the Go field name. `-` removes the field from the log. |
 | `allow`    | The literal word `allow`. The field is logged with its real value.                                                   |
 | `redactor` | Name of the [redactor](#redactors) applied to the field. Ignored when the field is allowed.                          |
+| `omitempty`| The literal word `omitempty`. The field is not logged when it is empty: `false`, `0`, a nil pointer, or an empty string, slice or map. A struct is never empty. |
 
 | Tag                     | Result                                                        |
 |-------------------------|---------------------------------------------------------------|
-| no tag                  | Redacted as `[redacted]`.                                     |
+| no tag                  | Not logged.                                                   |
+| `redact:""`             | Redacted as `[redacted]`.                                     |
 | `redact:"card_holder"`  | Redacted as `[redacted]`, under the key `card_holder`.        |
 | `redact:",allow"`       | Logged with its real value.                                   |
 | `redact:",,pan64"`      | Redacted with the `pan64` redactor.                           |
 | `redact:"pan,,pan64"`   | Redacted with the `pan64` redactor, under the key `pan`.      |
+| `redact:",,,omitempty"` | Redacted as `[redacted]`. Not logged when empty.              |
 | `redact:"-"`            | Not logged.                                                   |
 
-The generator only picks up structs that have **at least one field with a `redact` tag**. To get a struct where every
-field is redacted, tag one field with an empty tag: `redact:""`.
+Fields without a `redact` tag are not logged. To redact a field with the default redactor, give it an empty tag:
+`redact:""`. The generator only picks up structs that have **at least one field with a `redact` tag**.
 
 ### 2. Generate the code
 
@@ -204,7 +207,8 @@ that calls it if the type should work with `zap.Object` too.
 
 ### How fields are handled
 
-- **Redacted fields** (the default) can have any type. The value is handed to the redactor and logged as a string.
+- **Untagged fields** are not logged.
+- **Redacted fields** (tagged, without `allow`) can have any type. The value is handed to the redactor and logged as a string.
 - **Allowed fields** must have one of these types: `string`, `bool`, `int`, `int8`, `int16`, `int32`, `int64`, `uint`,
   `uint8`, `uint16`, `uint32`, `uint64`, `float32`, `float64`, `complex64`, `complex128`, `time.Time` or
   `time.Duration`, as a value (`T`), a pointer (`*T`) or a slice (`[]T`), plus `[]byte`. A nil pointer is logged as
@@ -212,7 +216,7 @@ that calls it if the type should work with `zap.Object` too.
   `unsupported field type`.
 - **Struct fields** whose type is declared in the same package, as a value or as a pointer, are logged as a nested
   object through their own `Redact` method. That type needs a generated (or handwritten) `Redact` method too. The
-  `allow` and `redactor` parts of the tag are ignored for these fields.
+  field itself still needs a `redact` tag; its `allow` and `redactor` parts are ignored.
 - **Struct types from other packages**, such as `url.URL`, are treated like any other value: redacted as a whole.
 - **Unexported fields** are included and follow the same rules.
 
@@ -228,8 +232,8 @@ that calls it if the type should work with `zap.Object` too.
 
 ## Reflection
 
-`redactreflection` walks the value with reflection every time it is logged. It needs no tags and no generated code,
-so it works with types from other packages and with maps.
+`redactreflection` walks the value with reflection every time it is logged. It needs no generated code, so it works
+with types from other packages and with maps. Only the fields that an option names or a `redact` tag marks are logged.
 
 ```go
 package main
@@ -274,11 +278,12 @@ func main() {
 	}
 
 	logger.Info("reused configuration", redactCustomer("customer", &customer))
-	// {"customer": {"Name": "Joe", "PAN": "123456******4321", "Address": {"Street": "[redacted]", "city": "Natal"}}}
+	// {"customer": {"Name": "Joe", "PAN": "123456******4321", "Address": {"city": "Natal"}}}
 
-	// Or pass the options on each call.
+	// Or pass the options on each call. The fields no option names are only logged, redacted, when asked for.
 	logger.Info("options per call", redactreflection.Redact("customer", &customer,
 		redactreflection.WithAllowFields("Name"),
+		redactreflection.WithUndocumentedFields(true),
 	))
 	// {"customer": {"Name": "Joe", "PAN": "[redacted]", "Token": "[redacted]", "Address": {"Street": "[redacted]", "city": "[redacted]"}}}
 
@@ -286,7 +291,7 @@ func main() {
 	logger.Info("map", redactreflection.Redact("payload", map[string]any{"id": 10, "password": "secret"},
 		redactreflection.WithAllowFields("id"),
 	))
-	// {"payload": {"id": 10, "password": "[redacted]"}} (map keys are logged in no particular order)
+	// {"payload": {"id": 10}}
 }
 ```
 
@@ -307,6 +312,7 @@ is logged as an empty object.
 | `WithAllowFields(paths...)`        | Logs the fields with their real values.                                                 |
 | `WithRedactor(path, redactor)`     | Redacts the field with the given [redactor](#redactors) instead of the default one.     |
 | `WithHiddenField(paths...)`        | Removes the fields from the log.                                                        |
+| `WithUndocumentedFields(include)`  | Logs, redacted, the fields that no option names and no `redact` tag marks. Off by default. |
 | `FieldNameExtractor(fn)`           | Replaces the function that names struct fields. The default is `DefaultNameExtractor`.  |
 
 Each field has a single setting. When several options name the same path, the last one wins.
@@ -333,7 +339,10 @@ type Customer struct {
   is redacted as a whole, or logged in full when allowed. Allowing a `*Address` or a `[]Address` field therefore logs
   all of its content unredacted.
 - **Unexported fields** and fields tagged `redact:"-"` are skipped.
-- Only the name part of the `redact` tag is used. The `allow` and `redactor` parts are ignored here: use the options.
+- A field is logged when an option names it or it has a `redact` tag, even an empty one. Every other field is left out,
+  unless `WithUndocumentedFields(true)` is set. Map keys have no tags, so an option must name them. A nested struct or
+  map whose fields are all left out is logged as an empty object.
+- Only the name part of the `redact` tag is used. The `allow`, `redactor` and `omitempty` parts are ignored here.
 - Map keys must be strings.
 
 ## Redactors

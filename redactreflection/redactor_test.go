@@ -50,14 +50,14 @@ var defaultTestingValue = testWalkFieldsStruct{
 }
 
 func Test_redactByReflection_Redact(t *testing.T) {
-	t.Run("should redact all fields", func(t *testing.T) {
+	t.Run("should redact all fields when the undocumented ones are included", func(t *testing.T) {
 		var logData bytes.Buffer
 		c := zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()), zapcore.AddSync(&logData), zapcore.DebugLevel)
 		logger := zap.New(c)
 
 		data := defaultTestingValue
 
-		logger.Info("message", Redact("data", data))
+		logger.Info("message", Redact("data", data, WithUndocumentedFields(true)))
 		_ = logger.Sync()
 		logString := logData.String()
 		assert.NotContains(t, logString, `name_value`)
@@ -92,7 +92,7 @@ func Test_redactByReflection_Redact(t *testing.T) {
 				"sub2": testWalkFieldsStructSub2{
 					SubField1: "sub2_field1_value",
 				},
-			}))
+			}, WithUndocumentedFields(true)))
 			_ = logger.Sync()
 			logString := logData.String()
 			assert.NotContains(t, logString, `name_value`)
@@ -117,6 +117,7 @@ func Test_redactByReflection_Redact(t *testing.T) {
 
 		logger.Info("message", Redact("data", data,
 			WithAllowFields("Name", "Sub.SubField2", "sub_2.subField1", "this_map.map_key1"),
+			WithUndocumentedFields(true),
 		))
 		_ = logger.Sync()
 		logString := logData.String()
@@ -157,12 +158,25 @@ func Test_redactByReflection_Redact(t *testing.T) {
 
 		logger.Info("message", Redact("data", data,
 			WithHiddenField("Sub.SubField1", "sub_2.subField1"),
+			WithUndocumentedFields(true),
 		))
 
 		_ = logger.Sync()
 		logString := logData.String()
 		assert.NotContains(t, logString, `"SubField1"`)
 		assert.NotContains(t, logString, `"subField1"`)
+	})
+
+	t.Run("should ignore the fields that are not listed or tagged", func(t *testing.T) {
+		enc := zapcore.NewMapObjectEncoder()
+
+		Redact("data", struct {
+			Listed string
+			Tagged string `redact:""`
+			Other  string
+		}{Listed: "listed_value", Tagged: "tagged_value", Other: "other_value"}, WithAllowFields("Listed")).AddTo(enc)
+
+		assert.Equal(t, map[string]any{"Listed": "listed_value", "Tagged": "[redacted]"}, enc.Fields["data"])
 	})
 
 	t.Run("should skip a field tagged with redact:\"-\"", func(t *testing.T) {
@@ -189,7 +203,7 @@ func Test_redactByReflection_Redact(t *testing.T) {
 		logger.Info("message", Redact("data", struct {
 			Allowed  time.Time
 			Redacted time.Time
-		}{Allowed: date, Redacted: date}, WithAllowFields("Allowed")))
+		}{Allowed: date, Redacted: date}, WithAllowFields("Allowed"), WithUndocumentedFields(true)))
 
 		_ = logger.Sync()
 		assert.Contains(t, logData.String(), `"data":{"Allowed":1609459200,"Redacted":"[redacted]"}`)

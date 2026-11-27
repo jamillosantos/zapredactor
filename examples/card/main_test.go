@@ -28,3 +28,17 @@ func TestGeneratedCode_redactsThroughZap(t *testing.T) {
 		})
 	}
 }
+
+func TestGeneratedCode_omitsEmptyFields(t *testing.T) {
+	empty := zapcore.NewMapObjectEncoder()
+	assert.NoError(t, Customer{}.Redact(empty))
+	assert.Equal(t, map[string]any{
+		"Name":    "[redacted]",
+		"Address": map[string]any{"Street": "[redacted]"},
+	}, empty.Fields)
+
+	filled := zapcore.NewMapObjectEncoder()
+	assert.NoError(t, Customer{Card: &CreditCard{}, Address: Address{City: "Natal"}}.Redact(filled))
+	assert.Contains(t, filled.Fields, "Card")
+	assert.Equal(t, map[string]any{"Street": "[redacted]", "City": "[redacted]"}, filled.Fields["Address"])
+}

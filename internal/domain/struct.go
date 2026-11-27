@@ -14,6 +14,7 @@ type RedactedField struct {
 	IsStruct     bool
 	IsPointer    bool
 	IsArray      bool
+	OmitEmpty    bool
 }
 
 type RedactedStruct struct {
@@ -34,6 +35,7 @@ func ToRedactedStruct(redactedStruct *myasthurts.Struct) RedactedStruct {
 			Redactor:     getRedactor(field.Tag),
 			IsStruct:     getIsStruct(field.RefType),
 			IsArray:      getIsArray(field.RefType),
+			OmitEmpty:    getOmitEmpty(field.Tag),
 		}
 	}
 	return RedactedStruct{
@@ -60,7 +62,13 @@ func getRedactor(tag myasthurts.Tag) string {
 
 func getSkip(tag myasthurts.Tag) bool {
 	t := tag.TagParamByName("redact")
-	return t != nil && t.Value == "-"
+	return t == nil || t.Value == "-"
+}
+
+// getOmitEmpty reports whether the fourth part of the tag is the literal "omitempty".
+func getOmitEmpty(tag myasthurts.Tag) bool {
+	t := tag.TagParamByName("redact")
+	return t != nil && len(t.Options) >= 3 && t.Options[2] == "omitempty"
 }
 
 func getIsRedacted(tag myasthurts.Tag) bool {

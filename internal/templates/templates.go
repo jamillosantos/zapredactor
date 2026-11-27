@@ -86,9 +86,15 @@ func UsesZap(field domain.RedactedField) bool {
 }
 
 func StreamRenderField(writer *quicktemplate.Writer, field domain.RedactedField) {
-	switch {
-	case field.Skip:
+	if field.Skip {
 		return
+	}
+	// A struct value is never empty, so checking it would only copy it.
+	if field.OmitEmpty && (field.IsPointer || !field.IsStruct) {
+		writer.N().S("if !zapredactor.IsEmpty(s." + field.Name + ") {\n")
+		defer writer.N().S("}\n")
+	}
+	switch {
 	case field.IsStruct:
 		StreamRenderObjectRedacted(writer, field)
 		return

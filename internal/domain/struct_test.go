@@ -22,21 +22,23 @@ func TestToRedactedStruct(t *testing.T) {
 		isRedacted   bool
 		skip         bool
 		redactor     string
+		omitEmpty    bool
 	}
 	fields := make(map[string]field, len(got.Fields))
 	for _, f := range got.Fields {
-		fields[f.Name] = field{f.ExportedName, f.IsRedacted, f.Skip, f.Redactor}
+		fields[f.Name] = field{f.ExportedName, f.IsRedacted, f.Skip, f.Redactor, f.OmitEmpty}
 	}
 	assert.Equal(t, "Sample", got.Name)
 	assert.Equal(t, map[string]field{
-		"Default":  {exportedName: "Default", isRedacted: true},
+		"Default":  {exportedName: "Default", isRedacted: true, skip: true},
 		"Named":    {exportedName: "named", isRedacted: true},
 		"Allowed":  {exportedName: "Allowed"},
 		"Redactor": {exportedName: "Redactor", isRedacted: true, redactor: "pan64"},
 		"All":      {exportedName: "all", redactor: "star"},
 		"Skipped":  {exportedName: "Skipped", isRedacted: true, skip: true},
-		"JSON":     {exportedName: "json_name", isRedacted: true},
+		"JSON":     {exportedName: "json_name", isRedacted: true, skip: true},
 		"Slice":    {exportedName: "Slice", isRedacted: true, redactor: "len"},
+		"Omitted":  {exportedName: "Omitted", isRedacted: true, omitEmpty: true},
 	}, fields)
 }
 

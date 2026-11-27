@@ -20,12 +20,12 @@ func main() {
 		"PAN":    "1234567890124321",
 	}
 
-	logger.Info("demo entry with all fields redacted", redactreflection.Redact("demo", &demo))
+	logger.Info("demo entry with all fields redacted", redactreflection.Redact("demo", &demo, redactreflection.WithUndocumentedFields(true)))
 	// Output: {"demo": {"String": "[redacted]", "Int": "[redacted]", "PAN": "[redacted]"}}
 	logger.Info("demo entry with one field redacted", redactreflection.Redact("demo", &demo, redactreflection.WithAllowFields("String")))
-	// Output: {"demo": {"String": "string", "Int": "[redacted]", "PAN": "[redacted]"}}
+	// Output: {"demo": {"String": "string"}}
 	logger.Info("demo entry with a custom redactor", redactreflection.Redact("demo", &demo, redactreflection.WithRedactor("PAN", redactors.PAN64)))
-	// Output: {"demo": {"String": "[redacted]", "Int": "[redacted]", "PAN": "123456******4321"}}
-	logger.Info("demo entry hiding a field", redactreflection.Redact("demo", &demo, redactreflection.WithHiddenField("PAN")))
+	// Output: {"demo": {"PAN": "123456******4321"}}
+	logger.Info("demo entry hiding a field", redactreflection.Redact("demo", &demo, redactreflection.WithUndocumentedFields(true), redactreflection.WithHiddenField("PAN")))
 	// Output: {"demo": {"String": "[redacted]", "Int": "[redacted]"}}
 }
