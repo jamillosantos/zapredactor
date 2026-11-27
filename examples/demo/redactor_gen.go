@@ -198,6 +198,25 @@ func (s *redactedDemo) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	zapredactor.AddRedacted(encoder, "RedactedDurations", s.RedactedDurations, "")
 	zapredactor.AddRedacted(encoder, "RedactedDurationp", s.RedactedDurationp, "")
 	zapredactor.AddRedacted(encoder, "RedactedByte", s.RedactedByte, "")
+	if s.OmitEmptyBool {
+		encoder.AddBool("OmitEmptyBool", s.OmitEmptyBool)
+	}
+	if s.OmitEmptyFloat64 != 0 {
+		encoder.AddFloat64("OmitEmptyFloat64", s.OmitEmptyFloat64)
+	}
+	if len(s.OmitEmptyStrings) != 0 {
+		zap.Strings("OmitEmptyStrings", s.OmitEmptyStrings).AddTo(encoder)
+	}
+	if s.OmitEmptyStringp != nil {
+		encoder.AddString("OmitEmptyStringp", *s.OmitEmptyStringp)
+	}
+	if s.OmitEmptyDuration != 0 {
+		encoder.AddDuration("OmitEmptyDuration", s.OmitEmptyDuration)
+	}
+	encoder.AddTime("OmitEmptyTime", s.OmitEmptyTime)
+	if !zapredactor.IsEmpty(s.OmitEmptyMonth) {
+		zapredactor.AddRedacted(encoder, "OmitEmptyMonth", s.OmitEmptyMonth, "")
+	}
 	return nil
 }
 

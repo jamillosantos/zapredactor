@@ -8,7 +8,7 @@ import (
 )
 
 type Expiry struct {
-	Month int
+	Month int `redact:""`
 	Year  int `redact:",allow"`
 }
 
@@ -16,7 +16,7 @@ type CreditCard struct {
 	PAN            string `json:"pan" redact:",,pan64"` // Logged as first 6 and last 4 digits.
 	CardHolder     string `redact:"card_holder"`
 	CVV            string `redact:",,*"` // Logged as one "*" per character.
-	Expiry         Expiry
+	Expiry         Expiry `redact:""`
 	First4         string `redact:",allow"`
 	Last4          string `redact:",allow"`
 	InternalStatus string `redact:"-"` // Never logged.
@@ -24,12 +24,12 @@ type CreditCard struct {
 
 type Address struct {
 	Street string `redact:","`
-	City   string
+	City   string `redact:",omitempty"`
 }
 
 type Customer struct {
 	Name    string      `redact:""`
-	Card    *CreditCard `redact:""`
+	Card    *CreditCard `redact:",omitempty"`
 	Address Address     `redact:""`
 }
 

@@ -66,7 +66,9 @@ type redactedAddress Address
 
 func (s *redactedAddress) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	zapredactor.AddRedacted(encoder, "Street", s.Street, "")
-	zapredactor.AddRedacted(encoder, "City", s.City, "")
+	if s.City != "" {
+		zapredactor.AddRedacted(encoder, "City", s.City, "")
+	}
 	return nil
 }
 
@@ -91,9 +93,7 @@ type redactedCustomer Customer
 
 func (s *redactedCustomer) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 	zapredactor.AddRedacted(encoder, "Name", s.Name, "")
-	if s.Card == nil {
-		encoder.AddReflected("Card", nil)
-	} else {
+	if s.Card != nil {
 		encoder.AddObject("Card", zapredactor.RedactObject(s.Card))
 	}
 	encoder.AddObject("Address", zapredactor.RedactObject(&s.Address))

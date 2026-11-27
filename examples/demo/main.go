@@ -66,61 +66,68 @@ type Demo struct {
 	Durationp                  *time.Duration  `redact:",allow"`
 	Byte                       []byte          `redact:",allow"`
 	NamedStringp               *string         `json:"named_stringp" redact:",allow"`
-	RedactedString             string
-	RedactedStringWithCardData string `redact:",,pan64"`
-	RedactedStrings            []string
-	RedactedStringp            *string
-	RedactedInt                int
-	RedactedInts               []int
-	RedactedIntp               *int
-	RedactedInt8               int8
-	RedactedInt8s              []int8
-	RedactedInt8p              *int8
-	RedactedInt16              int16
-	RedactedInt16s             []int16
-	RedactedInt16p             *int16
-	RedactedInt32              int32
-	RedactedInt32s             []int32
-	RedactedInt32p             *int32
-	RedactedInt64              int64
-	RedactedInt64s             []int64
-	RedactedInt64p             *int64
-	RedactedUint               uint
-	RedactedUints              []uint
-	RedactedUintp              *uint
-	RedactedUint8              uint8
-	RedactedUint8s             []uint8
-	RedactedUint8p             *uint8
-	RedactedUint16             uint16
-	RedactedUint16s            []uint16
-	RedactedUint16p            *uint16
-	RedactedUint32             uint32
-	RedactedUint32s            []uint32
-	RedactedUint32p            *uint32
-	RedactedUint64             uint64
-	RedactedUint64s            []uint64
-	RedactedUint64p            *uint64
-	RedactedFloat32            float32
-	RedactedFloat32s           []float32
-	RedactedFloat32p           *float32
-	RedactedFloat64            float64
-	RedactedFloat64s           []float64
-	RedactedFloat64p           *float64
-	RedactedComplex64          complex64
-	RedactedComplex64s         []complex64
-	RedactedComplex64p         *complex64
-	RedactedComplex128         complex128
-	RedactedComplex128s        []complex128
-	RedactedComplex128p        *complex128
-	RedactedBool               bool
-	RedactedBoolp              *bool
-	RedactedTime               time.Time
-	RedactedTimes              []time.Time
-	RedactedTimep              *time.Time
-	RedactedDuration           time.Duration
-	RedactedDurations          []time.Duration
-	RedactedDurationp          *time.Duration
-	RedactedByte               []byte
+	RedactedString             string          `redact:""`
+	RedactedStringWithCardData string          `redact:",,pan64"`
+	RedactedStrings            []string        `redact:""`
+	RedactedStringp            *string         `redact:""`
+	RedactedInt                int             `redact:""`
+	RedactedInts               []int           `redact:""`
+	RedactedIntp               *int            `redact:""`
+	RedactedInt8               int8            `redact:""`
+	RedactedInt8s              []int8          `redact:""`
+	RedactedInt8p              *int8           `redact:""`
+	RedactedInt16              int16           `redact:""`
+	RedactedInt16s             []int16         `redact:""`
+	RedactedInt16p             *int16          `redact:""`
+	RedactedInt32              int32           `redact:""`
+	RedactedInt32s             []int32         `redact:""`
+	RedactedInt32p             *int32          `redact:""`
+	RedactedInt64              int64           `redact:""`
+	RedactedInt64s             []int64         `redact:""`
+	RedactedInt64p             *int64          `redact:""`
+	RedactedUint               uint            `redact:""`
+	RedactedUints              []uint          `redact:""`
+	RedactedUintp              *uint           `redact:""`
+	RedactedUint8              uint8           `redact:""`
+	RedactedUint8s             []uint8         `redact:""`
+	RedactedUint8p             *uint8          `redact:""`
+	RedactedUint16             uint16          `redact:""`
+	RedactedUint16s            []uint16        `redact:""`
+	RedactedUint16p            *uint16         `redact:""`
+	RedactedUint32             uint32          `redact:""`
+	RedactedUint32s            []uint32        `redact:""`
+	RedactedUint32p            *uint32         `redact:""`
+	RedactedUint64             uint64          `redact:""`
+	RedactedUint64s            []uint64        `redact:""`
+	RedactedUint64p            *uint64         `redact:""`
+	RedactedFloat32            float32         `redact:""`
+	RedactedFloat32s           []float32       `redact:""`
+	RedactedFloat32p           *float32        `redact:""`
+	RedactedFloat64            float64         `redact:""`
+	RedactedFloat64s           []float64       `redact:""`
+	RedactedFloat64p           *float64        `redact:""`
+	RedactedComplex64          complex64       `redact:""`
+	RedactedComplex64s         []complex64     `redact:""`
+	RedactedComplex64p         *complex64      `redact:""`
+	RedactedComplex128         complex128      `redact:""`
+	RedactedComplex128s        []complex128    `redact:""`
+	RedactedComplex128p        *complex128     `redact:""`
+	RedactedBool               bool            `redact:""`
+	RedactedBoolp              *bool           `redact:""`
+	RedactedTime               time.Time       `redact:""`
+	RedactedTimes              []time.Time     `redact:""`
+	RedactedTimep              *time.Time      `redact:""`
+	RedactedDuration           time.Duration   `redact:""`
+	RedactedDurations          []time.Duration `redact:""`
+	RedactedDurationp          *time.Duration  `redact:""`
+	RedactedByte               []byte          `redact:""`
+	OmitEmptyBool              bool            `redact:",allow,,omitempty"`
+	OmitEmptyFloat64           float64         `redact:",allow,,omitempty"`
+	OmitEmptyStrings           []string        `redact:",allow,,omitempty"`
+	OmitEmptyStringp           *string         `redact:",allow,,omitempty"`
+	OmitEmptyDuration          time.Duration   `redact:",allow,,omitempty"`
+	OmitEmptyTime              time.Time       `redact:",allow,,omitempty"`
+	OmitEmptyMonth             time.Month      `redact:",,,omitempty"`
 }
 
 func main() {

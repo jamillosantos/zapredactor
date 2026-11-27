@@ -195,7 +195,7 @@ func RenderStruct(s domain.RedactedStruct) string {
 //line object_mashaller.qtpl:49
 func StreamRenderValueType(qw422016 *qt422016.Writer, field domain.RedactedField, t string) {
 //line object_mashaller.qtpl:50
-	if field.IsPointer {
+	if field.IsPointer && !field.OmitEmpty {
 //line object_mashaller.qtpl:50
 		qw422016.N().S(`	if s.`)
 //line object_mashaller.qtpl:51
@@ -235,7 +235,7 @@ func StreamRenderValueType(qw422016 *qt422016.Writer, field domain.RedactedField
 	qw422016.N().S(`)
 `)
 //line object_mashaller.qtpl:56
-	if field.IsPointer {
+	if field.IsPointer && !field.OmitEmpty {
 //line object_mashaller.qtpl:56
 		qw422016.N().S(`	}
 `)
@@ -367,7 +367,7 @@ func StreamRenderObjectRedacted(qw422016 *qt422016.Writer, field domain.Redacted
 //line object_mashaller.qtpl:69
 	qw422016.N().S(`	`)
 //line object_mashaller.qtpl:70
-	if field.IsPointer {
+	if field.IsPointer && !field.OmitEmpty {
 //line object_mashaller.qtpl:70
 		qw422016.N().S(`	if s.`)
 //line object_mashaller.qtpl:71
@@ -403,7 +403,7 @@ func StreamRenderObjectRedacted(qw422016 *qt422016.Writer, field domain.Redacted
 	qw422016.N().S(`))
 `)
 //line object_mashaller.qtpl:76
-	if field.IsPointer {
+	if field.IsPointer && !field.OmitEmpty {
 //line object_mashaller.qtpl:76
 		qw422016.N().S(`	}
 `)

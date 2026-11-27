@@ -18,18 +18,19 @@ type redactInfo struct {
 }
 
 type redactByReflection struct {
-	val                interface{}
-	info               map[string]redactInfo
-	fieldNameExtractor func(s reflect.StructField) string
+	val                 interface{}
+	info                map[string]redactInfo
+	fieldNameExtractor  func(s reflect.StructField) string
+	includeUndocumented bool
 }
 
-type fieldVisitor func(encoder zapcore.ObjectEncoder, fieldPath, fieldName string, value interface{})
+type fieldVisitor func(encoder zapcore.ObjectEncoder, fieldPath, fieldName string, value interface{}, tagged bool)
 
 // MarshalLogObject implements zapcore.ObjectMarshaler, so zap needs no proxy to log the value.
 func (r redactByReflection) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
-	walkFields(encoder, r.val, "", r.fieldNameExtractor, func(encoder zapcore.ObjectEncoder, fieldPath, fieldName string, value interface{}) {
-		info, _ := r.info[fieldPath]
-		if info.hidden {
+	walkFields(encoder, r.val, "", r.fieldNameExtractor, func(encoder zapcore.ObjectEncoder, fieldPath, fieldName string, value interface{}, tagged bool) {
+		info, listed := r.info[fieldPath]
+		if info.hidden || (!listed && !tagged && !r.includeUndocumented) {
 			return
 		}
 		if info.allow {
@@ -133,7 +134,7 @@ func runMap(encoder zapcore.ObjectEncoder, val reflect.Value, prefix string, fie
 		fieldValue := val.MapIndex(key).Interface()
 		switch fv := fieldValue.(type) {
 		case time.Time:
-			f(encoder, fieldPath, fieldName, fv)
+			f(encoder, fieldPath, fieldName, fv, false)
 			continue
 		}
 		mapVal := reflect.ValueOf(fieldValue)
@@ -149,7 +150,7 @@ func runMap(encoder zapcore.ObjectEncoder, val reflect.Value, prefix string, fie
 				return nil
 			}))
 		default:
-			f(encoder, fieldPath, fieldName, fieldValue)
+			f(encoder, fieldPath, fieldName, fieldValue, false)
 		}
 	}
 }
@@ -158,7 +159,8 @@ func runStruct(encoder zapcore.ObjectEncoder, val reflect.Value, prefix string, 
 	typ := val.Type()
 	for i := 0; i < val.NumField(); i++ {
 		field := typ.Field(i)
-		if field.PkgPath != "" || isSkippedByTag(field) {
+		tag, tagged := field.Tag.Lookup("redact")
+		if name, _, _ := strings.Cut(tag, ","); field.PkgPath != "" || name == "-" {
 			continue
 		}
 		fieldPath := prefix
@@ -180,16 +182,10 @@ func runStruct(encoder zapcore.ObjectEncoder, val reflect.Value, prefix string, 
 				return nil
 			}))
 		default:
-			f(encoder, fieldPath, fieldNameKey, val.Field(i).Interface())
+			f(encoder, fieldPath, fieldNameKey, val.Field(i).Interface(), tagged)
 		}
 	}
 }
 
 // timeType is logged as a value instead of being walked: all its fields are unexported.
 var timeType = reflect.TypeOf(time.Time{})
-
-// isSkippedByTag reports whether the field is tagged with `redact:"-"`.
-func isSkippedByTag(field reflect.StructField) bool {
-	name, _, _ := strings.Cut(field.Tag.Get("redact"), ",")
-	return name == "-"
-}

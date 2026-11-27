@@ -46,3 +46,11 @@ func WithHiddenField(fields ...string) ReflectionOption {
 		}
 	}
 }
+
+// WithUndocumentedFields defines whether the fields that no option names and no `redact` tag marks are logged,
+// redacted by the default redactor. They are not logged by default.
+func WithUndocumentedFields(include bool) ReflectionOption {
+	return func(r *redactByReflection) {
+		r.includeUndocumented = include
+	}
+}

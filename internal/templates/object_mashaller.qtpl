@@ -47,13 +47,13 @@ func (s {%s s.Name %}) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
 {% endfunc %}
 
 {% func RenderValueType(field domain.RedactedField, t string) -%}
-{%- if field.IsPointer -%}
+{%- if field.IsPointer && !field.OmitEmpty -%}
 	if s.{%s field.Name %} == nil {
 		encoder.AddReflected("{%j= field.ExportedName %}", nil)
 	} else {
 {%- endif -%}
 encoder.Add{%s t %}("{%j= field.ExportedName %}", {%- if field.IsPointer -%}*{%- endif -%}s.{%s field.Name %})
-{%- if field.IsPointer -%}
+{%- if field.IsPointer && !field.OmitEmpty -%}
 	}
 {%- endif -%}
 {%- endfunc %}
@@ -67,13 +67,13 @@ zapredactor.AddRedacted(encoder, "{%j= field.ExportedName %}", s.{%s field.Name 
 {%- endfunc %}
 
 {% func RenderObjectRedacted(field domain.RedactedField) -%}
-	{% if field.IsPointer -%}
+	{% if field.IsPointer && !field.OmitEmpty -%}
 	if s.{%s field.Name %} == nil {
 		encoder.AddReflected("{%j= field.ExportedName %}", nil)
 	} else {
 	{%- endif -%}
 	encoder.AddObject("{%j= field.ExportedName %}", zapredactor.RedactObject({% if !field.IsPointer %}&{% endif %}s.{%s field.Name %}))
-	{%- if field.IsPointer -%}
+	{%- if field.IsPointer && !field.OmitEmpty -%}
 	}
 	{%- endif -%}
 {%- endfunc %}
