@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"slices"
+
 	myasthurts "github.com/jamillosantos/go-my-ast-hurts"
 )
 
@@ -52,12 +54,18 @@ func getIsStruct(refType myasthurts.RefType) bool {
 	return false
 }
 
+// getRedactor returns the first part after the name that is not one of the allow and omitempty flags.
 func getRedactor(tag myasthurts.Tag) string {
 	t := tag.TagParamByName("redact")
-	if t == nil || len(t.Options) < 2 {
+	if t == nil {
 		return ""
 	}
-	return t.Options[1]
+	for _, option := range t.Options {
+		if option != "" && option != "allow" && option != "omitempty" {
+			return option
+		}
+	}
+	return ""
 }
 
 func getSkip(tag myasthurts.Tag) bool {
@@ -65,10 +73,10 @@ func getSkip(tag myasthurts.Tag) bool {
 	return t == nil || t.Value == "-"
 }
 
-// getOmitEmpty reports whether the fourth part of the tag is the literal "omitempty".
+// getOmitEmpty reports whether one of the parts after the name is the literal "omitempty".
 func getOmitEmpty(tag myasthurts.Tag) bool {
 	t := tag.TagParamByName("redact")
-	return t != nil && len(t.Options) >= 3 && t.Options[2] == "omitempty"
+	return t != nil && slices.Contains(t.Options, "omitempty")
 }
 
 func getIsRedacted(tag myasthurts.Tag) bool {

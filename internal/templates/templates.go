@@ -89,9 +89,8 @@ func StreamRenderField(writer *quicktemplate.Writer, field domain.RedactedField)
 	if field.Skip {
 		return
 	}
-	// A struct value is never empty, so checking it would only copy it.
-	if field.OmitEmpty && (field.IsPointer || !field.IsStruct) {
-		writer.N().S("if !zapredactor.IsEmpty(s." + field.Name + ") {\n")
+	if cond := notEmpty(field); field.OmitEmpty && cond != "" {
+		writer.N().S("if " + cond + " {\n")
 		defer writer.N().S("}\n")
 	}
 	switch {
@@ -111,4 +110,29 @@ func StreamRenderField(writer *quicktemplate.Writer, field domain.RedactedField)
 		return
 	}
 	panic("unsupported field type: " + field.Type)
+}
+
+// notEmpty returns the Go condition that holds when the field is not empty, as the omitempty of encoding/json sees it.
+// It is "" for a struct value, which is never empty. The templates count on it for pointers: with omitempty they
+// render no nil branch of their own.
+func notEmpty(field domain.RedactedField) string {
+	v := "s." + field.Name
+	switch {
+	case field.IsPointer:
+		return v + " != nil"
+	case field.IsArray:
+		return "len(" + v + ") != 0"
+	case field.IsStruct, field.Type == "time.Time":
+		return ""
+	case field.Type == "builtin.string":
+		return v + ` != ""`
+	case field.Type == "builtin.bool":
+		return v
+	}
+	// Every value type left is a number.
+	if _, ok := valueTypes[field.Type]; ok {
+		return v + " != 0"
+	}
+	// The generator does not see through the other types, such as the named ones, so they are checked when logging.
+	return "!zapredactor.IsEmpty(" + v + ")"
 }

@@ -24,12 +24,12 @@ type CreditCard struct {
 
 type Address struct {
 	Street string `redact:","`
-	City   string `redact:",,,omitempty"`
+	City   string `redact:",omitempty"`
 }
 
 type Customer struct {
 	Name    string      `redact:""`
-	Card    *CreditCard `redact:",,,omitempty"`
+	Card    *CreditCard `redact:",omitempty"`
 	Address Address     `redact:""`
 }
 

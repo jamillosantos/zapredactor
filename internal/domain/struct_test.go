@@ -39,6 +39,7 @@ func TestToRedactedStruct(t *testing.T) {
 		"JSON":     {exportedName: "json_name", isRedacted: true, skip: true},
 		"Slice":    {exportedName: "Slice", isRedacted: true, redactor: "len"},
 		"Omitted":  {exportedName: "Omitted", isRedacted: true, omitEmpty: true},
+		"Mixed":    {exportedName: "Mixed", redactor: "pan64", omitEmpty: true},
 	}, fields)
 }
 

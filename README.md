@@ -107,28 +107,31 @@ Output:
 #### The `redact` tag
 
 ```
-redact:"<name>,<allow>,<redactor>,<omitempty>"
+redact:"<name>,<options>"
 ```
 
-All four parts are optional.
+The name comes first and can be left empty. The options follow it in any order, and empty ones are ignored: `redact:",allow"`
+and `redact:",,allow"` are the same.
 
-| Part       | Meaning                                                                                                              |
-|------------|----------------------------------------------------------------------------------------------------------------------|
-| `name`     | Key used in the log. Defaults to the name in the `json` tag, then to the Go field name. `-` removes the field from the log. |
-| `allow`    | The literal word `allow`. The field is logged with its real value.                                                   |
-| `redactor` | Name of the [redactor](#redactors) applied to the field. Ignored when the field is allowed.                          |
-| `omitempty`| The literal word `omitempty`. The field is not logged when it is empty: `false`, `0`, a nil pointer, or an empty string, slice or map. A struct is never empty. |
+| Part          | Meaning                                                                                                           |
+|---------------|-------------------------------------------------------------------------------------------------------------------|
+| `name`        | Key used in the log. Defaults to the name in the `json` tag, then to the Go field name. `-` removes the field from the log. |
+| `allow`       | Option. The field is logged with its real value.                                                                  |
+| `omitempty`   | Option. The field is not logged when it is empty: `false`, `0`, a nil pointer, or an empty string, slice or map. A struct is never empty. |
+| anything else | Option. Name of the [redactor](#redactors) applied to the field: the first one wins. Ignored when the field is allowed. A redactor cannot be named `allow` or `omitempty`. |
 
-| Tag                     | Result                                                        |
-|-------------------------|---------------------------------------------------------------|
-| no tag                  | Not logged.                                                   |
-| `redact:""`             | Redacted as `[redacted]`.                                     |
-| `redact:"card_holder"`  | Redacted as `[redacted]`, under the key `card_holder`.        |
-| `redact:",allow"`       | Logged with its real value.                                   |
-| `redact:",,pan64"`      | Redacted with the `pan64` redactor.                           |
-| `redact:"pan,,pan64"`   | Redacted with the `pan64` redactor, under the key `pan`.      |
-| `redact:",,,omitempty"` | Redacted as `[redacted]`. Not logged when empty.              |
-| `redact:"-"`            | Not logged.                                                   |
+| Tag                         | Result                                                        |
+|-----------------------------|---------------------------------------------------------------|
+| no tag                      | Not logged.                                                   |
+| `redact:""`                 | Redacted as `[redacted]`.                                     |
+| `redact:"card_holder"`      | Redacted as `[redacted]`, under the key `card_holder`.        |
+| `redact:",allow"`           | Logged with its real value.                                   |
+| `redact:",pan64"`           | Redacted with the `pan64` redactor.                           |
+| `redact:"pan,pan64"`        | Redacted with the `pan64` redactor, under the key `pan`.      |
+| `redact:",omitempty"`       | Redacted as `[redacted]`. Not logged when empty.              |
+| `redact:",allow,omitempty"` | Logged with its real value. Not logged when empty.            |
+| `redact:",omitempty,pan64"` | Redacted with the `pan64` redactor. Not logged when empty.    |
+| `redact:"-"`                | Not logged.                                                   |
 
 Fields without a `redact` tag are not logged. To redact a field with the default redactor, give it an empty tag:
 `redact:""`. The generator only picks up structs that have **at least one field with a `redact` tag**.

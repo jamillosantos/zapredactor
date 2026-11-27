@@ -10,4 +10,5 @@ type Sample struct {
 	JSON     string   `json:"json_name,omitempty"`
 	Slice    []string `redact:",,len"`
 	Omitted  string   `redact:",,,omitempty"`
+	Mixed    string   `redact:",omitempty,pan64,allow"`
 }

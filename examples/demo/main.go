@@ -121,6 +121,13 @@ type Demo struct {
 	RedactedDurations          []time.Duration `redact:""`
 	RedactedDurationp          *time.Duration  `redact:""`
 	RedactedByte               []byte          `redact:""`
+	OmitEmptyBool              bool            `redact:",allow,,omitempty"`
+	OmitEmptyFloat64           float64         `redact:",allow,,omitempty"`
+	OmitEmptyStrings           []string        `redact:",allow,,omitempty"`
+	OmitEmptyStringp           *string         `redact:",allow,,omitempty"`
+	OmitEmptyDuration          time.Duration   `redact:",allow,,omitempty"`
+	OmitEmptyTime              time.Time       `redact:",allow,,omitempty"`
+	OmitEmptyMonth             time.Month      `redact:",,,omitempty"`
 }
 
 func main() {
